@@ -79,6 +79,9 @@ public class Waveform extends TemporalCore<Waveform, WaveformAudit> {
     @Column(columnDefinition = "timestamp with time zone", nullable = false)
     private Instant observationDatetime;
 
+    /**
+     * \brief Sampling rate of this data series in Hz.
+     */
     @Column(nullable = false)
     private long samplingRate;
 

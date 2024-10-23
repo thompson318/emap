@@ -130,12 +130,11 @@ public class VisitObservationController {
      * @return new or existing VisitObservationType
      */
     public VisitObservationType getOrCreateFromWaveform(WaveformMessage msg, Instant storedFrom) {
-//        RowState<VisitObservationType, VisitObservationTypeAudit> observationType = getOrCreateObservationTypeState(
         VisitObservationType observationType = cache.getOrCreatePersistedObservationType(
                 msg.getSourceStreamId(), msg.getSourceStreamId(), "waveform", msg.getObservationTime(), storedFrom);
         observationType.setName(msg.getMappedStreamDescription());
         observationType.setIsRealTime(true);
-        // XXX: what about updates if the description changes over time?
+        // Might want to consider updating/auditing if the name/description changes. See Issue #71
         return observationType;
     }
 
