@@ -36,10 +36,8 @@ services:
   cassandra:
     image: cassandra
     restart: on-failure
-    environment:
-      # if set too high the process will get OOM killed. Need to make configurable.
-      - MAX_HEAP_SIZE=1G
-      - HEAP_NEWSIZE=250M
+    env_file:
+      - ../../config/cassandra-config-envs
   glowroot-central:
     build:
       context: ..
