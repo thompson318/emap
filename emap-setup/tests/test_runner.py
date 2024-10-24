@@ -92,6 +92,7 @@ def test_time_window_is_set():
     runner = ValidationRunner(
         docker_runner=DockerRunner(project_dir=Path.cwd(), config=config),
         time_window=TimeWindow(start_date="today", end_date="7 days ago"),
+        timeout=timedelta(minutes=3),
     )
 
     mkdir("config")
@@ -149,7 +150,7 @@ def test_validation_source_arguments_set_correct_runner_attributes(args_list,
     ])
 def test_validation_timeout(num_trues, timeout_seconds, expect_raises):
     parser = create_parser()
-    args = parser.parse_args(["validation", "--use-waveform"])
+    args = parser.parse_args(["validation", "--use-waveform", "--timeout", str(timeout_seconds / 3600)])
     global_config = GlobalConfiguration(config_path_all)
 
     # simulate having to go through the check and wait loop a variable number of times
@@ -162,7 +163,7 @@ def test_validation_timeout(num_trues, timeout_seconds, expect_raises):
             return call_count <= num_trues
         return inner_mock_has_populated_queues
 
-    with patch.multiple(ValidationRunner, timeout=timedelta(seconds=timeout_seconds), wait_secs=0.6, final_wait_secs=0):
+    with patch.multiple(ValidationRunner, wait_secs=0.6, final_wait_secs=0):
         with patch.object(ValidationRunner, '_run_emap', new_callable=MagicMock) as run_emap:
             with patch.object(ValidationRunner, '_has_populated_queues', new_callable=PropertyMock) as populated_queues:
                 with patch.object(ValidationRunner, '_save_logs_and_stop', new_callable=MagicMock) as stop:

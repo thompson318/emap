@@ -1,4 +1,5 @@
 import argparse
+from datetime import timedelta
 
 from pathlib import Path
 from typing import Any
@@ -100,8 +101,15 @@ def create_parser() -> Parser:
         default=False,
         action="store_true",
     )
+    validation_parser.add_argument(
+        "--timeout",
+        type=lambda h: timedelta(hours=float(h)),
+        metavar="HOURS",
+        help="Max time to wait for the validation run to finish",
+        default=timedelta(hours=10),
+    )
 
-    # add use-FOO and no-use-FOO options for enabling/disabling various services in validation
+    # flags for enabling/disabling various services in validation
     add_boolean_optional_action(validation_parser, "hl7-reader", True, "the main HL7 ADT reader")
     add_boolean_optional_action(validation_parser, "hoover", True, "the hoover service")
     add_boolean_optional_action(validation_parser, "waveform", False, "waveform reader")
@@ -212,6 +220,7 @@ class EMAPRunner:
             use_hl7_reader=self.args.use_hl7_reader,
             use_hoover=self.args.use_hoover,
             use_waveform=self.args.use_waveform,
+            timeout=self.args.timeout,
         )
         runner.run()
         return runner
