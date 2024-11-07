@@ -27,8 +27,6 @@ public class WaveformProcessor {
 
     @Value("${core.waveform.retention_hours}")
     private int retentionTimeHours;
-    @Value("${core.waveform.is_non_current_test_data}")
-    private boolean isNonCurrentTestData;
 
     /**
      * @param visitObservationController visit observation controller
@@ -59,25 +57,37 @@ public class WaveformProcessor {
      */
     @Scheduled(fixedRate = 60 * 60 * 1000)
     public void deleteOldWaveformData() {
-        logger.info("deleteOldWaveformData: Checking for old waveform data for deletion");
-        Instant baselineDatetime;
-        if (isNonCurrentTestData) {
-            // while testing, use the current data (which may be for a
-            // date far from the present) as a reference for when to apply retention cutoff date from.
-            // ie. assume the time of the most recent data is "now"
-            baselineDatetime = waveformController.mostRecentObservationDatatime();
-            if (baselineDatetime == null) {
-                logger.info("deleteOldWaveformData: nothing in DB, do nothing");
-                return;
-            }
+        /* When calculating the retention cutoff datetime, instead of working back from the current datetime,
+         * start at the datetime of the most recent piece of waveform data.
+         * The main purpose of this is that when testing (eg. using a dump file that might be quite old),
+         * you don't want to immediately delete all the data due to its timestamps being way in the past.
+         * And in production the most recent piece of data will be very close to the present time anyway,
+         * so keep things simple and use the same logic in both cases.
+         */
+        Instant baselineDatetime = waveformController.mostRecentObservationDatatime();
+        if (baselineDatetime == null) {
+            logger.info("deleteOldWaveformData: nothing in DB, do nothing");
+            return;
+        }
 
-        } else {
-            baselineDatetime = Instant.now();
+        Instant now = Instant.now();
+        if (baselineDatetime.isAfter(now)) {
+            // In the hopefully unlikely case that the incoming data is in the future, don't
+            // go and delete all our data!
+            logger.warn("deleteOldWaveformData: most recent data is in the future ({}), using current time instead",
+                    baselineDatetime);
+            baselineDatetime = now;
+        }
+
+        if (retentionTimeHours <= 0) {
+            logger.info("deleteOldWaveformData: retention time is infinite, do nothing (baseline date = {})",
+                    baselineDatetime);
+            return;
         }
         Instant cutoff = baselineDatetime.minus(retentionTimeHours, ChronoUnit.HOURS);
-        logger.info("deleteOldWaveformData: baseline = {}, cutoff = {}", baselineDatetime, cutoff);
+        logger.info("deleteOldWaveformData: deleting, baseline date = {}, cutoff = {}", baselineDatetime, cutoff);
         int numDeleted = waveformController.deleteOldWaveformData(cutoff);
-        logger.info("deleteOldWaveformData: Old waveform data deletion: {} rows older than {}", numDeleted, cutoff);
+        logger.info("deleteOldWaveformData: deleted {} rows older than {}", numDeleted, cutoff);
     }
 
 }
