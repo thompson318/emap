@@ -28,11 +28,8 @@ but in practice it's typically 20 seconds. We have aimed for similar.
 ## Config options added
 
 Core:
-  - `core.waveform.retention_hours` periodically delete data more than this many hours old
-  - `core.waveform.is_non_current_test_data` for testing only - when deciding which data to delete/retain, if set to true,
-     then treat the "now" point as the most recent observation date in the waveform table, rather than the actual
-     current time. Purpose is to avoid test data getting immediately deleted because it's too old, which could happen
-     if we have a fixed set of test data with observation dates way in the past.
+  - `core.waveform.retention_hours` periodically delete data that is more than this many hours older than
+    the newest piece of waveform data.
 
 Waveform Generator:
   - `waveform.hl7.send_host`, `waveform.hl7.send_port` - the host and port to send the generated data to
