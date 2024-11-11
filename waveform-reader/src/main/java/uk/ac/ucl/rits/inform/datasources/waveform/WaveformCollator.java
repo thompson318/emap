@@ -159,6 +159,7 @@ public class WaveformCollator {
         // existing values are not necessarily in mutable lists so use a new ArrayList
         List<Double> newNumericValues = new ArrayList<>();
         Iterator<Map.Entry<Instant, WaveformMessage>> perPatientMapIter = perPatientMap.entrySet().iterator();
+        Map<Integer, Integer> uncollatedMessageSizes = new HashMap<>();
         int messagesToCollate = 0;
         while (perPatientMapIter.hasNext()) {
             Map.Entry<Instant, WaveformMessage> entry = perPatientMapIter.next();
@@ -168,26 +169,33 @@ public class WaveformCollator {
                 throw new CollationException(String.format("Key Mismatch: %s vs %s", firstKey, thisKey));
             }
 
-            sampleCount += msg.getNumericValues().get().size();
-            if (sampleCount > targetCollatedMessageSamples) {
-                logger.debug("Reached sample target ({} > {}), collated message span: {} -> {}",
-                        sampleCount, targetCollatedMessageSamples,
+            int thisMessageSampleCount = msg.getNumericValues().get().size();
+            int messageSizeCount = uncollatedMessageSizes.getOrDefault(thisMessageSampleCount, 0);
+            uncollatedMessageSizes.put(thisMessageSampleCount, messageSizeCount + 1);
+
+            if (sampleCount + thisMessageSampleCount > targetCollatedMessageSamples) {
+                logger.debug("Reached sample target ({} + {} > {}), collated message span: {} -> {}",
+                        sampleCount, thisMessageSampleCount, targetCollatedMessageSamples,
                         firstMsg.getObservationTime(), msg.getObservationTime());
                 break;
             }
+            sampleCount += thisMessageSampleCount;
 
             if (previousMsg != null) {
                 Instant expectedNextDatetime = previousMsg.getExpectedNextObservationDatetime();
                 try {
                     Instant gapUpperBound = checkGap(msg, expectedNextDatetime, assumedRounding);
                     if (gapUpperBound != null) {
-                        logger.info("Key {} ({}Hz), collated message span: {} -> {} ({} milliseconds, {} samples)",
+                        logger.info("Key {} ({}Hz), collated message span: {} -> {} ({} milliseconds, {} messages, {} samples)",
                                 makeKey(msg),
                                 msg.getSamplingRate(),
-                                firstMsg.getObservationTime(), msg.getObservationTime(),
-                                firstMsg.getObservationTime().until(msg.getObservationTime(), ChronoUnit.MILLIS),
+                                firstMsg.getObservationTime(),
+                                expectedNextDatetime,
+                                firstMsg.getObservationTime().until(expectedNextDatetime, ChronoUnit.MILLIS),
+                                messagesToCollate,
                                 sampleCount);
-                        // Found a gap, stop here. Decide later whether data is old enough to make a message anyway.
+                        // Found a gap, stop here, excluding `msg`.
+                        // Collation may still happen if data is old enough that we don't want to wait for more.
                         break;
                     }
                 } catch (CollationOverlapException coe) {
@@ -225,6 +233,9 @@ public class WaveformCollator {
                 && expectedNextDatetime.until(nowTime, ChronoUnit.MILLIS) <= waitForDataLimitMillis) {
             return null;
         }
+
+        logger.info("Collating {} messages into one. Total samples {}. Source messages contained sample counts: {}",
+                messagesToCollate, sampleCount, uncollatedMessageSizes);
 
         // Do the actual collation now that we know how far to go.
         Iterator<Map.Entry<Instant, WaveformMessage>> secondPassIter = perPatientMap.entrySet().iterator();
