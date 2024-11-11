@@ -1,4 +1,7 @@
-pytest
+matplotlib
 pandas
-sqlalchemy
 psycopg2-binary
+pytest
+scipy
+soundfile
+sqlalchemy

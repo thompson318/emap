@@ -1,5 +1,8 @@
 package uk.ac.ucl.rits.inform.datasources.waveform_generator;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -30,6 +33,7 @@ public class Hl7Generator {
     @Value("${waveform.synthetic.num_patients:30}")
     private int numPatients;
 
+    private final GeneratorContext generatorContext = new GeneratorContext();
 
     /**
      * The generator can be run in "live" or "catch-up" mode.
@@ -239,20 +243,24 @@ public class Hl7Generator {
                                                    final long maxSamplesPerMessage
     ) {
         List<String> allMessages = new ArrayList<>();
-        final long numSamples = numMillis * samplingRate / 1000;
+        final long numSamplesThisCall = numMillis * samplingRate / 1000;
         final double maxValue = 999;
-        for (long overallSampleIdx = 0; overallSampleIdx < numSamples;) {
-            long microsAfterStart = overallSampleIdx * 1000_000 / samplingRate;
+        GeneratorContext.GeneratorContextRecord context = generatorContext.getContext(locationId, streamId);
+        // This counter persists over repeated calls to this function to avoid the input
+        // to sin being reset to zero every few seconds
+        long persistentSampleIdx = context.getCounter();
+        for (int thisCallCounter = 0; thisCallCounter < numSamplesThisCall;) {
+            long microsAfterStart = persistentSampleIdx * 1000_000 / samplingRate;
             Instant messageStartTime = startTime.plus(microsAfterStart, ChronoUnit.MICROS);
             String timeStr = DateTimeFormatter.ofPattern("HHmmss").format(startTime.atOffset(ZoneOffset.UTC));
-            String messageId = String.format("%s_s%s_t%s_msg%05d", locationId, streamId, timeStr, overallSampleIdx);
+            String messageId = String.format("%s_s%s_t%s_msg%05d", locationId, streamId, timeStr, persistentSampleIdx);
 
             var values = new ArrayList<Double>();
             for (long valueIdx = 0;
-                 valueIdx < maxSamplesPerMessage && overallSampleIdx < numSamples;
-                 valueIdx++, overallSampleIdx++) {
+                 valueIdx < maxSamplesPerMessage && thisCallCounter < numSamplesThisCall;
+                 valueIdx++, thisCallCounter++, persistentSampleIdx++) {
                 // a sine wave between maxValue and -maxValue
-                values.add(2 * maxValue * Math.sin(overallSampleIdx * 0.01) - maxValue);
+                values.add(maxValue * Math.sin(persistentSampleIdx * 0.01));
             }
 
             // Only one stream ID per HL7 message for the time being
@@ -261,6 +269,7 @@ public class Hl7Generator {
             String fullHl7message = applyHl7Template(samplingRate, locationId, messageStartTime, messageId, valuesByStreamId);
             allMessages.add(fullHl7message);
         }
+        context.setCounter(persistentSampleIdx);
         return allMessages;
     }
 
@@ -299,6 +308,28 @@ public class Hl7Generator {
         }
 
         return waveformMsgs;
+    }
+
+    private class GeneratorContext {
+        private final Map<ImmutablePair<String, String>, GeneratorContextRecord> allContexts = new HashMap<>();
+
+        @AllArgsConstructor
+        class GeneratorContextRecord {
+            @Getter @Setter
+            private long counter;
+        }
+
+        public GeneratorContextRecord getContext(ImmutablePair<String, String> contextKey) {
+            return allContexts.computeIfAbsent(contextKey, k -> new GeneratorContextRecord(0));
+        }
+
+        public GeneratorContextRecord getContext(String locationId, String streamId) {
+            return getContext(GeneratorContext.makeKey(locationId, streamId));
+        }
+
+        public static ImmutablePair<String, String> makeKey(String locationId, String streamId) {
+            return new ImmutablePair<>(locationId, streamId);
+        }
     }
 
 }
