@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 
 import pytest
 from pytest import approx
@@ -16,6 +17,15 @@ con = engine.connect()
 
 qry = open("gaps.sql").read()
 
+all_params = pd.read_sql_query(search_path_preamble +
+                               """
+                               SELECT DISTINCT visit_observation_type_id, source_location
+                               FROM WAVEFORM
+                               """, con)
+print(all_params)
+print("!!!")
+
+@lru_cache
 def run_with_params(visit_observation_type_id, source_location):
     params = (visit_observation_type_id, source_location)
     print(f"running with {params}")
@@ -25,13 +35,6 @@ def run_with_params(visit_observation_type_id, source_location):
 # --AND observation_datetime < %s
 
 def test_all_for_gaps():
-    all_params = pd.read_sql_query(search_path_preamble +
-                                   """
-                                   SELECT DISTINCT visit_observation_type_id, source_location
-                                   FROM WAVEFORM
-                                   """, con)
-    print(all_params)
-    print("!!!")
     for ps in all_params.itertuples():
         waveform_df = run_with_params(ps.visit_observation_type_id, ps.source_location)
         duration = pd.to_timedelta(waveform_df['values_array'].apply(len), "seconds") / waveform_df['sampling_rate']
@@ -50,10 +53,23 @@ def test_all_for_gaps():
         print(f"Total samples = {total_samples} @{sampling_rate}Hz, Total active time = {total_active_time}, total calendar = {total_calendar_time}")
         indexes_with_gap = waveform_df[waveform_df['gap_since_last'].apply(abs) > pd.Timedelta(milliseconds=1)].index
         print(f"Indexes with gap: {indexes_with_gap}")
-        assert indexes_with_gap.empty;
+        print(f"with gap: {waveform_df[indexes_with_gap]}")
+        assert indexes_with_gap.empty
         assert abs(total_active_time - total_calendar_time) < pd.Timedelta(milliseconds=1)
 
         # Index(['waveform_id', 'stored_from', 'valid_from', 'observation_datetime',
         #        'sampling_rate', 'source_location', 'unit', 'values_array',
         #        'location_visit_id', 'visit_observation_type_id'],
         #       dtype='object')
+
+
+def test_no_orphaned_data():
+    orphaned_data = pd.read_sql_query(search_path_preamble +
+                                   """
+                                   SELECT *
+                                   FROM WAVEFORM
+                                   WHERE location_visit_id IS NULL
+                                   """, con)
+    print(orphaned_data)
+    # all data is orphaned because the generator doesn't put any ADT messages in!
+    assert orphaned_data.empty
