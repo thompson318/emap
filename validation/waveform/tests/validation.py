@@ -1,22 +1,39 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     notebook_metadata_filter: -jupytext.text_representation.jupytext_version,-kernelspec
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+# ---
+
+# %%
 import os
 from functools import lru_cache
 
+# %%
 import pytest
 from pytest import approx
 import pandas as pd
 import sqlalchemy
 import psycopg2
 
+# %%
 database_url = 'postgresql+psycopg2://inform_user:inform@localhost:5433/fakeuds'
 schema = "uds_schema"
 search_path_preamble = f"set search_path to {schema};"
 engine = sqlalchemy.create_engine(database_url)
 
+# %%
 # put in fixture
 con = engine.connect()
 
+# %%
 qry = open("gaps.sql").read()
 
+# %%
 all_params = pd.read_sql_query(search_path_preamble +
                                """
                                SELECT DISTINCT visit_observation_type_id, source_location
@@ -25,6 +42,7 @@ all_params = pd.read_sql_query(search_path_preamble +
 print(all_params)
 print("!!!")
 
+# %%
 @lru_cache
 def run_with_params(visit_observation_type_id, source_location):
     params = (visit_observation_type_id, source_location)
@@ -32,8 +50,10 @@ def run_with_params(visit_observation_type_id, source_location):
     waveform_df = pd.read_sql_query(search_path_preamble + qry, con, params=params)
     return waveform_df
 
+# %% [markdown]
 # --AND observation_datetime < %s
 
+# %%
 def test_all_for_gaps():
     for ps in all_params.itertuples():
         waveform_df = run_with_params(ps.visit_observation_type_id, ps.source_location)
@@ -63,6 +83,7 @@ def test_all_for_gaps():
         #       dtype='object')
 
 
+# %%
 def test_no_orphaned_data():
     orphaned_data = pd.read_sql_query(search_path_preamble +
                                    """
