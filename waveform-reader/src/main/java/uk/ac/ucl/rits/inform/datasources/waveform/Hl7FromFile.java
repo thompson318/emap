@@ -19,16 +19,16 @@ public class Hl7FromFile {
     private final Logger logger = LoggerFactory.getLogger(Hl7FromFile.class);
 
     private final ThreadPoolTaskExecutor listenTaskExecutor;
-    private final Hl7ParseAndSend hl7ParseAndSend;
+    private final Hl7ParseAndQueue hl7ParseAndQueue;
     private final File hl7DumpFile;
     static final String MESSAGE_DELIMITER = "\u001c";
 
     Hl7FromFile(ThreadPoolTaskExecutor listenTaskExecutor,
-                Hl7ParseAndSend hl7ParseAndSend,
+                Hl7ParseAndQueue hl7ParseAndQueue,
                 @Value("${waveform.hl7.test_dump_file:#{null}}") File hl7DumpFile
                 ) {
         this.listenTaskExecutor = listenTaskExecutor;
-        this.hl7ParseAndSend = hl7ParseAndSend;
+        this.hl7ParseAndQueue = hl7ParseAndQueue;
         this.hl7DumpFile = hl7DumpFile;
     }
 
@@ -64,7 +64,7 @@ public class Hl7FromFile {
         List<String> messages = readFromFile(hl7DumpFile);
         logger.info("Read {} HL7 messages from test dump file", messages.size());
         for (int mi = 0; mi < messages.size(); mi++) {
-            hl7ParseAndSend.parseAndQueue(messages.get(mi));
+            hl7ParseAndQueue.parseAndQueue(messages.get(mi));
             if (mi % 100 == 0) {
                 logger.info("handled {} messages out of {}", mi + 1, messages.size());
             }

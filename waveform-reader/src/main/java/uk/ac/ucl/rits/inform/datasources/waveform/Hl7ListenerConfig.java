@@ -31,10 +31,10 @@ import java.util.List;
 public class Hl7ListenerConfig {
     private final Logger logger = LoggerFactory.getLogger(Hl7ListenerConfig.class);
 
-    private final Hl7ParseAndSend hl7ParseAndSend;
+    private final Hl7ParseAndQueue hl7ParseAndQueue;
 
-    public Hl7ListenerConfig(Hl7ParseAndSend hl7ParseAndSend) {
-        this.hl7ParseAndSend = hl7ParseAndSend;
+    public Hl7ListenerConfig(Hl7ParseAndQueue hl7ParseAndQueue) {
+        this.hl7ParseAndQueue = hl7ParseAndQueue;
     }
 
     /**
@@ -164,7 +164,7 @@ public class Hl7ListenerConfig {
         byte[] asBytes = msg.getPayload();
         String asStr = new String(asBytes, StandardCharsets.UTF_8);
         // parse message from HL7 to interchange message, send to internal queue
-        hl7ParseAndSend.parseAndQueue(asStr);
+        hl7ParseAndQueue.parseAndQueue(asStr);
     }
 
 }
