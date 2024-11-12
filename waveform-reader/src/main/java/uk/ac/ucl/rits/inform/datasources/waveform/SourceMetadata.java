@@ -22,7 +22,7 @@ import java.util.Optional;
  */
 @Component
 public class SourceMetadata {
-    private final Logger logger = LoggerFactory.getLogger(Hl7ParseAndSend.class);
+    private final Logger logger = LoggerFactory.getLogger(Hl7ParseAndQueue.class);
     private static final Resource CSV_RESOURCE = new ClassPathResource("source-metadata/Device_Values_formatted.csv");
     private Map<String, SourceMetadataItem> metadataByStreamId = new HashMap<>();
 

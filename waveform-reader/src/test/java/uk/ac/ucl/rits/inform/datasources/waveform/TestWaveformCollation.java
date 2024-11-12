@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ActiveProfiles("test")
 public class TestWaveformCollation {
     @Autowired
-    private Hl7ParseAndSend hl7ParseAndSend;
+    private Hl7ParseAndQueue hl7ParseAndQueue;
     @Autowired
     private WaveformCollator waveformCollator;
 
