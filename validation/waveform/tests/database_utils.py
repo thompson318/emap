@@ -63,16 +63,21 @@ def get_data_single_stream(visit_observation_type_id, source_location, min_time,
     #        'sampling_rate', 'source_location', 'unit', 'values_array',
     #        'location_visit_id', 'visit_observation_type_id'],
     #       dtype='object')
+    # It's much quicker to do the array unpacking and date calculation here rather than in pandas later.
+    # This will still need a trim because the way the SQL arrays work you get more data than you need.
     query = SET_SEARCH_PATH + """
                              SELECT
-                                 observation_datetime,
-                                 sampling_rate,
-                                 source_location,
-                                 unit,
-                                 values_array,
-                                 location_visit_id,
-                                 visit_observation_type_id
-                             FROM WAVEFORM
+                                 w.waveform_id,
+                                 w.observation_datetime AS base_observation_datetime,
+                                 w.observation_datetime + make_interval(secs => (v.ordinality - 1)::float / w.sampling_rate) AS observation_datetime,
+                                 v.v as waveform_value,
+                                 v.ordinality,
+                                 w.sampling_rate,
+                                 w.source_location,
+                                 w.unit,
+                                 w.location_visit_id,
+                                 w.visit_observation_type_id
+                             FROM WAVEFORM w, unnest(w.values_array) WITH ORDINALITY v
                              WHERE visit_observation_type_id = %s AND source_location = %s
                                AND observation_datetime >= %s
                                AND observation_datetime <= %s

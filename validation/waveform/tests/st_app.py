@@ -32,8 +32,7 @@ def reset_times(gr):
     )))
 
 
-print("location = " + str(location))
-print("stream = " + str(stream))
+print(f"location = {location}, stream = {stream}")
 if not location:
     st.error("Please select a location")
 elif not stream:
@@ -41,14 +40,10 @@ elif not stream:
 else:
     stream_filter = (all_params['source_location'] == location) & (all_params['visit_observation_type_id'] == stream)
     par = all_params[stream_filter]
-    print("par" + str(par))
-    print("par.iloc[0]" + str(par.iloc[0]))
-    # print("par[0]" + str(par[0]))
     min_time, max_time = database_utils.get_min_max_time_for_single_stream(int(par.iloc[0].visit_observation_type_id), par.iloc[0].source_location)
     min_time = min_time.to_pydatetime()
     max_time = max_time.to_pydatetime()
     print(f"min={min_time}, max={max_time}")
-    # st.write(f"{min_time}, {max_time}")
     if min_time is None:
         st.error("No data for location found")
 
@@ -58,26 +53,24 @@ else:
     with bottom_cols[1]:
         graph_width_seconds = st.slider("Chart duration (seconds)", min_value=1, max_value=15)
 
-    start_time = datetime.now()
     graph_end_time = graph_start_time + timedelta(seconds=graph_width_seconds)
     data = database_utils.get_data_single_stream_rounded(int(par.iloc[0].visit_observation_type_id), par.iloc[0].source_location,
                                                  min_time=graph_start_time, max_time=graph_end_time)
-    one_per_row_reset_times = waveform_utils.explode_values_array(data)
-    trimmed = one_per_row_reset_times[one_per_row_reset_times['observation_datetime'].between(graph_start_time, graph_end_time)]
+    # print(data.head())
+    trimmed = data[data['observation_datetime'].between(graph_start_time, graph_end_time)]
 
     chart = (
         alt.Chart(trimmed, width=1100, height=600)
         .mark_line(opacity=0.9)
         .encode(
             x="observation_datetime",
-            y=alt.Y("value", stack=None),
+            y=alt.Y("waveform_value", stack=None),
             # color="Region:N",
         ).interactive()
         # .add_params(
         #     alt.selection_interval(bind='scales')
         # )
     )
-    print(f"Graph refresh time: {datetime.now() - start_time}")
     with st_graph_area:
         st.altair_chart(chart, use_container_width=True)  # , on_select='rerun')
 
