@@ -121,7 +121,7 @@ public class Hl7Generator {
         int numChunks = 0;
         Instant progressAtStart = progressDatetime;
         while (progressDatetime.isBefore(getExpectedProgressDatetime())) {
-            logger.info("Making HL7 messages");
+            logger.info("Making HL7 messages starting at time {} for {} milliseconds", progressDatetime, millisPerChunk);
             List<String> synthMsgs = makeSyntheticWaveformMsgsAllPatients(progressDatetime, numPatients, millisPerChunk);
             logger.info("Sending {} HL7 messages", synthMsgs.size());
             // To avoid the worker threads in the reader being blocked trying to write to the
@@ -230,6 +230,7 @@ public class Hl7Generator {
      * @param locationId where the data originates from (machine/bed location)
      * @param streamId identifier for the stream
      * @param samplingRate in samples per second
+     * @param signalFrequencyHz the signal baseline frequency (Hz)
      * @param numMillis number of milliseconds to produce data for
      * @param startTime observation time of the beginning of the period that the messages are to cover
      * @param maxSamplesPerMessage max samples per message (will split into multiple messages if needed)
@@ -238,6 +239,7 @@ public class Hl7Generator {
     private List<String> makeSyntheticWaveformMsgs(final String locationId,
                                                    final String streamId,
                                                    final long samplingRate,
+                                                   final double signalFrequencyHz,
                                                    final long numMillis,
                                                    final Instant startTime,
                                                    final long maxSamplesPerMessage
@@ -250,7 +252,7 @@ public class Hl7Generator {
         // to sin being reset to zero every few seconds
         long persistentSampleIdx = context.getCounter();
         for (int thisCallCounter = 0; thisCallCounter < numSamplesThisCall;) {
-            long microsAfterStart = persistentSampleIdx * 1000_000 / samplingRate;
+            long microsAfterStart = thisCallCounter * 1000_000L / samplingRate;
             Instant messageStartTime = startTime.plus(microsAfterStart, ChronoUnit.MICROS);
             String timeStr = DateTimeFormatter.ofPattern("HHmmss").format(startTime.atOffset(ZoneOffset.UTC));
             String messageId = String.format("%s_s%s_t%s_msg%05d", locationId, streamId, timeStr, persistentSampleIdx);
@@ -259,8 +261,7 @@ public class Hl7Generator {
             for (long valueIdx = 0;
                  valueIdx < maxSamplesPerMessage && thisCallCounter < numSamplesThisCall;
                  valueIdx++, thisCallCounter++, persistentSampleIdx++) {
-                // a sine wave between maxValue and -maxValue
-                values.add(maxValue * Math.sin(persistentSampleIdx * 0.01));
+                values.add(maxValue * Math.sin(2 * Math.PI * signalFrequencyHz * persistentSampleIdx / samplingRate));
             }
 
             // Only one stream ID per HL7 message for the time being
@@ -296,13 +297,15 @@ public class Hl7Generator {
         numPatients = Math.min(numPatients, possibleLocations.size());
         for (int p = 0; p < numPatients; p++) {
             var location = possibleLocations.get(p);
-            String streamId1 = "52912";
-            String streamId2 = "27";
+            String streamId1 = "52912"; // airway volume
+            String streamId2 = "27"; // ECG
             int sizeBefore = waveformMsgs.size();
+            // each bed has a slightly different frequency
+            double frequencyFactor =  0.95 + 0.1 * p / possibleLocations.size();
             waveformMsgs.addAll(makeSyntheticWaveformMsgs(
-                    location, streamId1, 50, numMillis, startTime, 5));
+                    location, streamId1, 50, 0.3 * frequencyFactor, numMillis, startTime, 5));
             waveformMsgs.addAll(makeSyntheticWaveformMsgs(
-                    location, streamId2, 300, numMillis, startTime, 10));
+                    location, streamId2, 300, 1.2 * frequencyFactor, numMillis, startTime, 10));
             int sizeAfter = waveformMsgs.size();
             logger.debug("Patient {} (location {}), generated {} messages", p, location, sizeAfter - sizeBefore);
         }

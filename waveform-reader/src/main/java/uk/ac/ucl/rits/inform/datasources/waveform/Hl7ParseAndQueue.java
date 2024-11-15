@@ -23,6 +23,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Receive HL7 messages, transform each to an interchange message, and
+ * store them in memory ready for collation into bigger interchange messages
+ * (see {@link WaveformCollator}).
+ */
 @Component
 public class Hl7ParseAndQueue {
     private final Logger logger = LoggerFactory.getLogger(Hl7ParseAndQueue.class);

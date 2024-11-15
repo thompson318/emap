@@ -19,6 +19,11 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 @Component
+/**
+ * Read interchange messages produced by {@link Hl7ParseAndQueue}, identify
+ * contiguous data to turn them into bigger interchange messages for greater
+ * DB storage efficiency.
+ */
 public class WaveformCollator {
     private final Logger logger = LoggerFactory.getLogger(WaveformCollator.class);
     protected final Map<Pair<String, String>, SortedMap<Instant, WaveformMessage>> pendingMessages = new HashMap<>();
