@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import numpy as np
 import pandas as pd
@@ -7,11 +7,23 @@ import altair as alt
 import database_utils
 import waveform_utils
 
-# for par in all_params.itertuples():
-#     data = get_data_single_stream(par.visit_observation_type_id, par.source_location)
-#     st.multiselect("Flerp", list(data['source_location']))
+st.set_page_config(layout="wide")
+
+st_top_controls = st.container()
+st_bottom_controls = st.container()
+st_graph_area = st.container()
+with st_top_controls:
+    top_cols = st.columns(2)
+with st_bottom_controls:
+    bottom_cols = st.columns(2, gap='medium')
 
 all_params = database_utils.get_all_params()
+
+with top_cols[0]:
+    location = st.selectbox("Choose location", sorted(set(all_params['source_location'])))
+with top_cols[1]:
+    stream = st.selectbox("Choose stream", set(all_params['visit_observation_type_id']))
+
 
 def reset_times(gr):
     return gr.assign(observation_datetime=(
@@ -20,11 +32,6 @@ def reset_times(gr):
     )))
 
 
-# locations = st.multiselect("Flerp2", list(range(5)))
-location = st.selectbox("Choose location", list(all_params['source_location']))
-stream = st.selectbox("Choose stream", set(all_params['visit_observation_type_id']))
-
-# This is currently mixing up all the streams!!
 print("location = " + str(location))
 print("stream = " + str(stream))
 if not location:
@@ -32,8 +39,8 @@ if not location:
 elif not stream:
     st.error("Please select a stream")
 else:
-    blerp = (all_params['source_location'] == location) & (all_params['visit_observation_type_id'] == stream)
-    par = all_params[blerp]
+    stream_filter = (all_params['source_location'] == location) & (all_params['visit_observation_type_id'] == stream)
+    par = all_params[stream_filter]
     print("par" + str(par))
     print("par.iloc[0]" + str(par.iloc[0]))
     # print("par[0]" + str(par[0]))
@@ -41,31 +48,26 @@ else:
     min_time = min_time.to_pydatetime()
     max_time = max_time.to_pydatetime()
     print(f"min={min_time}, max={max_time}")
-    st.write(f"{min_time}, {max_time}")
+    # st.write(f"{min_time}, {max_time}")
     if min_time is None:
         st.error("No data for location found")
 
-    # graph_one_time = st.slider("time?", min_value=min_time, max_value=max_time)
-    select_options = []
-    t = min_time
-    while t <= max_time:
-        select_options.append(t)
-        t += timedelta(seconds=1)
+    with bottom_cols[0]:
+        graph_start_time = st.slider("Start time", min_value=min_time, max_value=max_time, step=timedelta(seconds=1),
+                                     format="")
+    with bottom_cols[1]:
+        graph_width_seconds = st.slider("Chart duration (seconds)", min_value=1, max_value=15)
 
-    graph_min_time, graph_max_time = st.select_slider("time interval?", options=select_options, value=[min_time, max_time])
-    data = database_utils.get_data_single_stream(int(par.iloc[0].visit_observation_type_id), par.iloc[0].source_location,
-                                                 min_time=graph_min_time, max_time=graph_max_time)
-    print(data.columns)
-    # data.explode('values_array')
-    # # explode into one row per data point, and adjust the observation datetimes
-    # one_per_row = data.explode('values_array')
-    # one_per_row['idx_within_group'] = one_per_row.groupby(level=0).cumcount()
+    start_time = datetime.now()
+    graph_end_time = graph_start_time + timedelta(seconds=graph_width_seconds)
+    data = database_utils.get_data_single_stream_rounded(int(par.iloc[0].visit_observation_type_id), par.iloc[0].source_location,
+                                                 min_time=graph_start_time, max_time=graph_end_time)
     one_per_row_reset_times = waveform_utils.explode_values_array(data)
+    trimmed = one_per_row_reset_times[one_per_row_reset_times['observation_datetime'].between(graph_start_time, graph_end_time)]
 
-    # data['values_array'] = data['values_array'].apply(lambda l: np.array(l))
     chart = (
-        alt.Chart(one_per_row_reset_times)
-        .mark_area(opacity=0.9)
+        alt.Chart(trimmed, width=1100, height=600)
+        .mark_line(opacity=0.9)
         .encode(
             x="observation_datetime",
             y=alt.Y("value", stack=None),
@@ -75,6 +77,7 @@ else:
         #     alt.selection_interval(bind='scales')
         # )
     )
-    # st.scatter_chart(one_per_row_reset_times, y='value', size=1, on_select='rerun')
-    st.altair_chart(chart, use_container_width=True) # , on_select='rerun')
+    print(f"Graph refresh time: {datetime.now() - start_time}")
+    with st_graph_area:
+        st.altair_chart(chart, use_container_width=True)  # , on_select='rerun')
 

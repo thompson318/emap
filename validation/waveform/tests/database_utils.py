@@ -1,3 +1,5 @@
+import math
+from datetime import timedelta
 from functools import lru_cache
 
 import pandas as pd
@@ -10,6 +12,7 @@ SET_SEARCH_PATH = f"set search_path to {schema};"
 engine = sqlalchemy.create_engine(database_url)
 
 
+@lru_cache
 def get_all_params():
     con = engine.connect()
     return pd.read_sql_query(SET_SEARCH_PATH +
@@ -35,28 +38,46 @@ def get_min_max_time_for_single_stream(visit_observation_type_id, source_locatio
         return minmax.iloc[0].min_time, minmax.iloc[0].max_time
 
 
+def get_data_single_stream_rounded(visit_observation_type_id, source_location, min_time, max_time, max_row_length_seconds=30):
+    # Because a row's observation_datetime is the time of the *first* data point in the array,
+    # to get the data starting at time T, you have to query the DB for data a little earlier than T.
+    # Additionally, to aid caching, round down further so repeated calls with
+    # approximately similar values of min_time will result in exactly the
+    # same query being issued (which is hopefully already cached)
+    actual_min_time = min_time - timedelta(seconds=max_row_length_seconds)
+    rounded_seconds = actual_min_time.second // 10 * 10
+    rounded_min_time = actual_min_time.replace(second=rounded_seconds, microsecond=0)
+    # For the same reason, round the max value up to the nearest few secondsA (5 is pretty arbitrary)
+    # (using +timedelta instead of replacing seconds value because you might hit 60 and have to wrap around)
+    rounded_max_time = max_time.replace(second=0, microsecond=0) + timedelta(seconds=math.ceil(max_time.second / 5) * 5)
+    print(f"Adjusted min time {min_time} -> {rounded_min_time}")
+    print(f"Adjusted max time {max_time} -> {rounded_max_time}")
+    return get_data_single_stream(visit_observation_type_id, source_location, rounded_min_time, rounded_max_time)
+
+
 @lru_cache
-def get_data_single_stream(visit_observation_type_id, source_location, min_time=None, max_time=None):
-    params = (visit_observation_type_id, source_location)
+def get_data_single_stream(visit_observation_type_id, source_location, min_time, max_time):
+    params = (visit_observation_type_id, source_location, min_time, max_time)
     con = engine.connect()
+    # Index(['waveform_id', 'stored_from', 'valid_from', 'observation_datetime',
+    #        'sampling_rate', 'source_location', 'unit', 'values_array',
+    #        'location_visit_id', 'visit_observation_type_id'],
+    #       dtype='object')
     query = SET_SEARCH_PATH + """
-                             SELECT *
+                             SELECT
+                                 observation_datetime,
+                                 sampling_rate,
+                                 source_location,
+                                 unit,
+                                 values_array,
+                                 location_visit_id,
+                                 visit_observation_type_id
                              FROM WAVEFORM
                              WHERE visit_observation_type_id = %s AND source_location = %s
+                               AND observation_datetime >= %s
+                               AND observation_datetime <= %s
+                             ORDER BY observation_datetime
                              """
-    if min_time is not None:
-        query += """
-                 AND observation_datetime >= %s
-                 """
-        params += (min_time,)
-    if max_time is not None:
-        query += """
-                 AND observation_datetime <= %s
-                 """
-        params += (max_time,)
-    query += """
-             ORDER BY observation_datetime
-             """
     # print(f"qry = {query}, params = {params}")
     data = pd.read_sql_query(query, con, params=params)
     return data
