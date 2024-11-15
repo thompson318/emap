@@ -26,7 +26,9 @@ import soundfile
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.fft import fft
+
 import database_utils
+import waveform_utils
 
 # %%
 all_params = database_utils.get_all_params()
@@ -65,7 +67,7 @@ def to_ogg():
         all_points = [a/1000 for a in all_points]
         print(f"POST max={max(all_points)}, min={min(all_points)}")
         for sampling_rate in [88200]:
-            outfile = f"output/output_{date_str}_{par.visit_observation_type_id}_{par.source_location}_{sampling_rate}.ogg"
+            outfile = f"validation_output/output_{date_str}_{par.visit_observation_type_id}_{par.source_location}_{sampling_rate}.ogg"
             soundfile.write(outfile, all_points, sampling_rate, format='OGG')
 
 
@@ -87,15 +89,15 @@ def do_fft(all_points, sampling_rate):
 
 
 # %%
-def plot_waveform(par, max_seconds=30):
+def plot_waveform(par, max_seconds=10):
     # global plot_df, data, all_points_centered, abs_fft_values, frequencies
     data = get_data_single_stream(par.visit_observation_type_id, par.source_location)
     sampling_rate = get_distinct_sampling_rate(data)
     all_points = []
     data['values_array'].apply(lambda va: all_points.extend(va))
-    # use only first 30 seconds
+    # use only first N seconds
     all_points_trimmed = all_points[:sampling_rate * max_seconds]
-    print(f"sampling rate {sampling_rate}, data {len(all_points)} -> {len(all_points_trimmed)}")
+    print(f"{par.source_location} sampling rate {sampling_rate}, data {len(all_points)} -> {len(all_points_trimmed)}")
     all_points_centered, abs_fft_values, frequencies = do_fft(all_points_trimmed, sampling_rate)
     fig, ax = plt.subplots(1, 2, figsize=(10, 5))
     print(f"|points| = {len(all_points_centered)}, |fft_vals| = {len(abs_fft_values)}, |frequencies|/2 = {len(frequencies)/2}")
@@ -126,5 +128,20 @@ for par in all_params.itertuples():
     if plot_waveform(par):
         break
 
+
+# %%
+par = all_params[0]
+data = get_data_single_stream(par.visit_observation_type_id, par.source_location)
+one_per_row_reset_times = waveform_utils.explode_values_array(data)
+
+
+# %%
+one_per_row_reset_times.head()
+
+# %%
+one_per_row_reset_times.iloc[0:100000:10000]
+
+# %%
+one_per_row_reset_times.shape
 
 # %%

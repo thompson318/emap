@@ -94,3 +94,9 @@ def test_no_orphaned_data():
     print(orphaned_data)
     # all data is orphaned because the generator doesn't put any ADT messages in!
     assert orphaned_data.empty
+
+
+# %%
+test_all_for_gaps()
+
+# %%

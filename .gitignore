@@ -51,3 +51,7 @@ hs_err_pid*
 
 # python
 __pycache__
+
+# prevent notebooks from being checked in
+*.ipynb
+.ipynb_checkpoints
