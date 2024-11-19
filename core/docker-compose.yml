@@ -54,4 +54,14 @@ services:
     restart: on-failure
     depends_on:
        - cassandra
+  emap-portal:
+    build:
+      context: ..
+      dockerfile: core/Dockerfile.emap-portal
+    env_file:
+      - ../../config/portal-config-envs
+    ports:
+      - "${PORTAL_PORT}:80"
+
+
 

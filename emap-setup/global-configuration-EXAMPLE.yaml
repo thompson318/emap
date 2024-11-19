@@ -109,3 +109,10 @@ waveform:
   WAVEFORM_SYNTHETIC_WARP_FACTOR: 6
   WAVEFORM_SYNTHETIC_START_DATETIME: "2024-01-02T12:00:00Z"
   WAVEFORM_SYNTHETIC_END_DATETIME: "2024-01-03T12:00:00Z"
+
+# The nginx portal and other monitoring/validation/visualisation services
+monitoring:
+  PORTAL_PORT: 7100
+  PORTAL_USERNAME: emap
+  PORTAL_PASSWORD: portal_password
+  use_streamlit: false
