@@ -108,6 +108,8 @@ class DockerRunner:
             paths.append(Path(self.emap_dir, "waveform-reader", "docker-compose.yml"))
             if self.use_fake_waveform:
                 paths.append(Path(self.emap_dir, "waveform-generator", "docker-compose.yml"))
+        if self.config.get("monitoring", "use_streamlit"):
+            paths.append(Path(self.emap_dir, "monitoring", "docker-compose.yml"))
 
         # allow for hoover and to be optional compose path
         if "hoover" in self.config["repositories"]:

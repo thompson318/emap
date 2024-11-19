@@ -1,16 +1,26 @@
 import math
+import os
 from datetime import timedelta
 from functools import lru_cache
 
 import pandas as pd
 import sqlalchemy
+from sqlalchemy.engine.url import make_url
 import psycopg2
 
-database_url = 'postgresql+psycopg2://inform_user:inform@localhost:5433/fakeuds'
-schema = "uds_schema"
-SET_SEARCH_PATH = f"set search_path to {schema};"
-engine = sqlalchemy.create_engine(database_url)
+# Perhaps we should move away from making the JDBC url primary, but
+# for now we will have to accept this and make some edits so we can
+# use it here.
+database_jdbc_url = os.environ['UDS_JDBC_URL']
+database_user = os.environ['UDS_USERNAME']
+database_password = os.environ['UDS_PASSWORD']
+database_schema = os.environ['UDS_SCHEMA']
+database_url = make_url(database_jdbc_url.replace("jdbc:", ""))
+# host, database, and port will be correct, but change the driver and user/pass
+database_url = database_url.set(drivername='postgresql+psycopg2', username=database_user, password=database_password)
 
+SET_SEARCH_PATH = f"set search_path to {database_schema};"
+engine = sqlalchemy.create_engine(database_url)
 
 @lru_cache
 def get_all_params():

@@ -22,6 +22,7 @@ class GlobalConfiguration(dict):
         "glowroot",
         "common",
         "features",
+        "monitoring",
     )
 
     def __init__(self, filepath: Path):

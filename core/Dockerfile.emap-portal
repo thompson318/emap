@@ -1,0 +1,4 @@
+FROM nginx:otel
+COPY core/emap-portal/nginx.conf /etc/nginx/
+COPY core/emap-portal/conf.d/* /etc/nginx/conf.d/
+COPY core/emap-portal/www/* /usr/share/nginx/html/
