@@ -1,11 +1,11 @@
 import math
 import os
 from datetime import timedelta
-from functools import lru_cache
 
 import pandas as pd
 import sqlalchemy
 from sqlalchemy.engine.url import make_url
+import streamlit as st
 import psycopg2
 
 # Perhaps we should move away from making the JDBC url primary, but
@@ -22,17 +22,23 @@ database_url = database_url.set(drivername='postgresql+psycopg2', username=datab
 SET_SEARCH_PATH = f"set search_path to {database_schema};"
 engine = sqlalchemy.create_engine(database_url)
 
-@lru_cache
+
+@st.cache_data(ttl=1800)
 def get_all_params():
     con = engine.connect()
     return pd.read_sql_query(SET_SEARCH_PATH +
                              """
-                             SELECT DISTINCT visit_observation_type_id, source_location
-                             FROM WAVEFORM
+                             SELECT DISTINCT
+                                 w.visit_observation_type_id,
+                                 w.source_location,
+                                 vot.name
+                             FROM WAVEFORM w
+                             INNER JOIN VISIT_OBSERVATION_TYPE vot
+                                 ON vot.visit_observation_type_id = w.visit_observation_type_id
                              """, con)
 
 
-@lru_cache
+@st.cache_data(ttl=180)
 def get_min_max_time_for_single_stream(visit_observation_type_id, source_location):
     params = (visit_observation_type_id, source_location)
     con = engine.connect()
@@ -65,7 +71,7 @@ def get_data_single_stream_rounded(visit_observation_type_id, source_location, m
     return get_data_single_stream(visit_observation_type_id, source_location, rounded_min_time, rounded_max_time)
 
 
-@lru_cache
+@st.cache_data
 def get_data_single_stream(visit_observation_type_id, source_location, min_time, max_time):
     params = (visit_observation_type_id, source_location, min_time, max_time)
     con = engine.connect()
