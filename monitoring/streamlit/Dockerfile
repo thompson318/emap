@@ -7,5 +7,9 @@ CMD streamlit run \
     --browser.gatherUsageStats=false \
     --server.enableWebsocketCompression=false \
     --server.enableXsrfProtection=false \
+    # base URL to match where the proxy expects it to be - simpler than URL rewriting in the proxy
     --server.baseUrlPath "streamlit" \
+    # Without this, websocket calls don't work behind nginx
+    --browser.serverAddress ${SERVER_EXTERNAL_HOSTNAME} \
+    --browser.serverPort ${PORTAL_PORT} \
     st_app.py

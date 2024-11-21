@@ -90,6 +90,7 @@ glowroot:
 
 # The nginx portal and other monitoring/validation/visualisation services
 monitoring:
+  SERVER_EXTERNAL_HOSTNAME: server.fqdn.example
   PORTAL_PORT: 7100
   PORTAL_USERNAME: emap
   PORTAL_PASSWORD: portal_password
