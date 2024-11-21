@@ -3,4 +3,4 @@ WORKDIR /app/streamlit
 COPY monitoring/requirements.txt /app/streamlit
 RUN pip install -r requirements.txt
 COPY monitoring/streamlit/ /app/streamlit
-CMD streamlit run --browser.gatherUsageStats=false st_app.py
+CMD streamlit run --browser.gatherUsageStats=false --server.baseUrlPath "streamlit" st_app.py
