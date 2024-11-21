@@ -21,7 +21,8 @@ class GlobalConfiguration(dict):
         "global",
         "glowroot",
         "common",
-        "features",
+        "fake_uds",
+        "waveform"
     )
 
     def __init__(self, filepath: Path):
