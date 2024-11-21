@@ -34,9 +34,9 @@ class DockerRunner:
         self.project_dir = project_dir
         self.emap_dir = project_dir / "emap"
         self.config = config
-        self.enable_waveform = first_not_none(enable_waveform, self.config.get("features", "waveform"))
-        self.use_fake_waveform = first_not_none(use_fake_waveform, self.config.get("features", "waveform_generator"))
-        self.use_fake_uds = first_not_none(use_fake_uds, self.config.get("features", "fake_uds"))
+        self.enable_waveform = first_not_none(enable_waveform, self.config.get("waveform", "enable_waveform"))
+        self.use_fake_waveform = first_not_none(use_fake_waveform, self.config.get("waveform", "enable_waveform_generator"))
+        self.use_fake_uds = first_not_none(use_fake_uds, self.config.get("fake_uds", "enable_fake_uds"))
 
     def run(
         self,

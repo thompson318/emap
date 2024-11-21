@@ -50,8 +50,8 @@ Waveform Reader:
 
 ## Container housekeeping (setup script)
 The waveform processing feature is enabled or disabled in the global configuration file. I've added
-a "features" section for this, and taken the opportunity to also add the `fakeuds` container to make that easier
-to turn on and off.
+a "waveform" section for these and related settings.
+I also added the `fake_uds` section for turning that on and off.
 
 Because the waveform feature flag will include/exclude the relevant docker compose files from
 the docker commands it generates, you can continue to
