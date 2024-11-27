@@ -138,6 +138,10 @@ class GlobalConfiguration(dict):
 
             try:
                 value = self.get_first(key, env_file.basename)
+                if value is None:
+                    # Don't stringify None, Spring won't understand.
+                    # Empty string is the closest alternative.
+                    value = ""
                 env_file.set_new_line_at(f"{key}={value}\n", idx=i)
 
             except KeyError:
