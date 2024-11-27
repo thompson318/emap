@@ -77,9 +77,10 @@ public class TestWaveformCollation {
     }
 
     static Stream<Arguments> noGapsData() {
-        // We are adjusting the target number of samples config option rather than
-        // the actual number of samples supplied, which may be a bit unintuitive but
-        // is easier and amounts to the same thing.
+        // There is a fixed quantity of 3000 samples in messages containing 5 samples each.
+        // We are adjusting the *target* number of samples config option rather than
+        // the actual number of messages/samples supplied, which may be unintuitive but
+        // amounts to the same thing and means we can use the same test data each time.
         return Stream.of(
                 // only just happened
                 Arguments.of(3000, 10000, List.of(3000), 0),
