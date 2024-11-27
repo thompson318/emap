@@ -164,6 +164,7 @@ public class WaveformCollator {
         // existing values are not necessarily in mutable lists so use a new ArrayList
         List<Double> newNumericValues = new ArrayList<>();
         Iterator<Map.Entry<Instant, WaveformMessage>> perPatientMapIter = perPatientMap.entrySet().iterator();
+        // keep track of incoming message sizes for general interest (does not affect collation algorithm)
         Map<Integer, Integer> uncollatedMessageSizes = new HashMap<>();
         int messagesToCollate = 0;
         while (perPatientMapIter.hasNext()) {
@@ -178,13 +179,19 @@ public class WaveformCollator {
             int messageSizeCount = uncollatedMessageSizes.getOrDefault(thisMessageSampleCount, 0);
             uncollatedMessageSizes.put(thisMessageSampleCount, messageSizeCount + 1);
 
-            if (sampleCount + thisMessageSampleCount > targetCollatedMessageSamples) {
-                logger.debug("Reached sample target ({} + {} > {}), collated message span: {} -> {}",
-                        sampleCount, thisMessageSampleCount, targetCollatedMessageSamples,
+            // Ideally this code would be reworked, but for now it's important for sampleCount to meet or exceed
+            // targetCollatedMessageSamples even if we break out here (and thus don't include the current message).
+            // This is needed to prevent the check later on that would say the total sample count isn't big enough
+            // to make a message unless the data is old enough that we should collate regardless.
+            // Essentially, the later code is failing to realise that you can "meet" the target even if you're slightly
+            // short of it, because the next message would take us over the target.
+            sampleCount += thisMessageSampleCount;
+            if (sampleCount > targetCollatedMessageSamples) {
+                logger.debug("Reached sample target ({} > {}), collated message size {}, collated message span: {} -> {}",
+                        sampleCount, targetCollatedMessageSamples, sampleCount - thisMessageSampleCount,
                         firstMsg.getObservationTime(), msg.getObservationTime());
                 break;
             }
-            sampleCount += thisMessageSampleCount;
 
             if (previousMsg != null) {
                 Instant expectedNextDatetime = previousMsg.getExpectedNextObservationDatetime();
