@@ -67,13 +67,21 @@ else:
                                                  min_time=graph_start_time, max_time=graph_end_time)
     trimmed = data[data['observation_datetime'].between(graph_start_time, graph_end_time)]
     waveform_units = trimmed['unit'].drop_duplicates().tolist()
-    if len(waveform_units) != 1:
+    if len(waveform_units) > 1:
         with st_graph_area:
             st.error(f"duplicate units: {waveform_units}")
+        waveform_unit = "n/a"
+    elif len(waveform_units) == 0:
+        with st_graph_area:
+            st.error(f"no data over the given time period, try selecting another time")
+        waveform_unit = "n/a"
+    else:
+        waveform_unit = waveform_units[0]
+
 
     chart = (
         alt.Chart(trimmed, width=1100, height=600)
-        .mark_line(opacity=0.9)
+        .mark_point(opacity=0.9)
         .encode(
             x=alt.X("observation_datetime",
                     title="Observation datetime",
@@ -86,7 +94,7 @@ else:
                                   ticks=True),
                     ),
             y=alt.Y("waveform_value",
-                    title=f"{stream_label} ({waveform_units[0]})",
+                    title=f"{stream_label} ({waveform_unit})",
                     stack=None,
                     axis=alt.Axis(
                         titleFontSize=24,
