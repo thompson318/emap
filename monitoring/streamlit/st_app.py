@@ -60,7 +60,7 @@ else:
         graph_start_time = st.slider("Start time", min_value=min_time, max_value=max_time, step=timedelta(seconds=1),
                                      format="")
     with bottom_cols[1]:
-        graph_width_seconds = st.slider("Chart duration (seconds)", min_value=1, max_value=15, value=15)
+        graph_width_seconds = st.slider("Chart duration (seconds)", min_value=1, max_value=30, value=30)
 
     graph_end_time = graph_start_time + timedelta(seconds=graph_width_seconds)
     data = database_utils.get_data_single_stream_rounded(int(par.iloc[0].visit_observation_type_id), par.iloc[0].source_location,
