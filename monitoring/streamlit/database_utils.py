@@ -23,31 +23,31 @@ SET_SEARCH_PATH = f"set search_path to {database_schema};"
 engine = sqlalchemy.create_engine(database_url)
 
 
-@st.cache_data(ttl=1800)
+@st.cache_data(ttl=180)
 def get_all_params():
-    con = engine.connect()
-    return pd.read_sql_query(SET_SEARCH_PATH +
-                             """
-                             SELECT DISTINCT
-                                 w.visit_observation_type_id,
-                                 w.source_location,
-                                 vot.name
-                             FROM WAVEFORM w
-                             INNER JOIN VISIT_OBSERVATION_TYPE vot
-                                 ON vot.visit_observation_type_id = w.visit_observation_type_id
-                             """, con)
+    with engine.connect() as con:
+        return pd.read_sql_query(SET_SEARCH_PATH +
+                                 """
+                                 SELECT DISTINCT
+                                     w.visit_observation_type_id,
+                                     w.source_location,
+                                     vot.name
+                                 FROM WAVEFORM w
+                                 INNER JOIN VISIT_OBSERVATION_TYPE vot
+                                     ON vot.visit_observation_type_id = w.visit_observation_type_id
+                                 """, con)
 
 
 @st.cache_data(ttl=180)
 def get_min_max_time_for_single_stream(visit_observation_type_id, source_location):
     params = (visit_observation_type_id, source_location)
-    con = engine.connect()
     query = SET_SEARCH_PATH + """
                              SELECT min(observation_datetime) as min_time, max(observation_datetime) as max_time
                              FROM WAVEFORM
                              WHERE visit_observation_type_id = %s AND source_location = %s
                              """
-    minmax = pd.read_sql_query(query, con, params=params)
+    with engine.connect() as con:
+        minmax = pd.read_sql_query(query, con, params=params)
     if minmax.empty:
         return None, None
     else:
@@ -74,7 +74,6 @@ def get_data_single_stream_rounded(visit_observation_type_id, source_location, m
 @st.cache_data
 def get_data_single_stream(visit_observation_type_id, source_location, min_time, max_time):
     params = (visit_observation_type_id, source_location, min_time, max_time)
-    con = engine.connect()
     # Index(['waveform_id', 'stored_from', 'valid_from', 'observation_datetime',
     #        'sampling_rate', 'source_location', 'unit', 'values_array',
     #        'location_visit_id', 'visit_observation_type_id'],
@@ -100,5 +99,6 @@ def get_data_single_stream(visit_observation_type_id, source_location, min_time,
                              ORDER BY observation_datetime
                              """
     # print(f"qry = {query}, params = {params}")
-    data = pd.read_sql_query(query, con, params=params)
+    with engine.connect() as con:
+        data = pd.read_sql_query(query, con, params=params)
     return data
