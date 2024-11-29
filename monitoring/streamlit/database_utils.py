@@ -23,7 +23,7 @@ SET_SEARCH_PATH = f"set search_path to {database_schema};"
 engine = sqlalchemy.create_engine(database_url)
 
 
-@st.cache_data(ttl=180)
+@st.cache_data(ttl=20)
 def get_all_params():
     with engine.connect() as con:
         return pd.read_sql_query(SET_SEARCH_PATH +
@@ -38,7 +38,7 @@ def get_all_params():
                                  """, con)
 
 
-@st.cache_data(ttl=180)
+@st.cache_data(ttl=20)
 def get_min_max_time_for_single_stream(visit_observation_type_id, source_location):
     params = (visit_observation_type_id, source_location)
     query = SET_SEARCH_PATH + """
@@ -71,7 +71,7 @@ def get_data_single_stream_rounded(visit_observation_type_id, source_location, m
     return get_data_single_stream(visit_observation_type_id, source_location, rounded_min_time, rounded_max_time)
 
 
-@st.cache_data
+@st.cache_data(ttl=20)
 def get_data_single_stream(visit_observation_type_id, source_location, min_time, max_time):
     params = (visit_observation_type_id, source_location, min_time, max_time)
     # Index(['waveform_id', 'stored_from', 'valid_from', 'observation_datetime',
