@@ -55,7 +55,7 @@ else:
     graph_start_time = bottom_cols[0].slider("Start time",
                                              min_value=min_time, max_value=max_time,
                                              value=st.session_state.slider_value,
-                                             step=timedelta(seconds=1), format="")
+                                             step=timedelta(seconds=10), format="")
     st.session_state.slider_value = graph_start_time
     if min_time is None:
         st.error("No data for location+stream found")
@@ -79,7 +79,8 @@ else:
     stream_label = unique_streams[stream_id]
     chart = (
         alt.Chart(trimmed, width=1100, height=600)
-        .mark_point(opacity=0.9)
+        # unfortunately the line continues over gaps in the data, but points are too ugly so stick with this for now
+        .mark_line(opacity=0.9)
         .encode(
             x=alt.X("observation_datetime",
                     title="Observation datetime",
