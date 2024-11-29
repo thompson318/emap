@@ -13,8 +13,8 @@ st_bottom_controls = st.container()
 st_graph_area = st.container()
 st_info_box = st.container()
 st_info_box.write(f"Schema: {database_utils.database_schema}")
-top_cols = st_top_controls.columns(2)
-bottom_cols = st_bottom_controls.columns(2, gap='medium')
+top_cols = st_top_controls.columns(4)
+bottom_cols = st_bottom_controls.columns(1, gap='medium')
 
 all_params = database_utils.get_all_params()
 
@@ -43,6 +43,9 @@ if not location:
 elif not stream_id:
     st.error("Please select a stream")
 else:
+    if top_cols[2].button("Re-check DB"):
+        st.cache_data.clear()
+
     min_time, max_time = database_utils.get_min_max_time_for_single_stream(int(stream_id), location)
     min_time = min_time.to_pydatetime()
     max_time = max_time.to_pydatetime()
@@ -60,7 +63,7 @@ else:
     if min_time is None:
         st.error("No data for location+stream found")
 
-    graph_width_seconds = bottom_cols[1].slider("Chart duration (seconds)", min_value=1, max_value=30, value=30)
+    graph_width_seconds = top_cols[3].slider("Chart width (seconds)", min_value=1, max_value=30, value=30)
 
     graph_end_time = graph_start_time + timedelta(seconds=graph_width_seconds)
     data = database_utils.get_data_single_stream_rounded(int(stream_id), location,
