@@ -47,6 +47,8 @@ else:
         st.cache_data.clear()
 
     min_time, max_time = database_utils.get_min_max_time_for_single_stream(int(stream_id), location)
+    if min_time is None:
+        st.error("No data for location+stream found")
     min_time = min_time.to_pydatetime()
     max_time = max_time.to_pydatetime()
 
@@ -60,8 +62,6 @@ else:
                                              value=st.session_state.slider_value,
                                              step=timedelta(seconds=10), format="")
     st.session_state.slider_value = graph_start_time
-    if min_time is None:
-        st.error("No data for location+stream found")
 
     graph_width_seconds = top_cols[3].slider("Chart width (seconds)", min_value=1, max_value=30, value=30)
 
