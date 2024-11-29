@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+import time
 
 import pandas as pd
 import streamlit as st
@@ -11,12 +12,9 @@ st_top_controls = st.container()
 st_bottom_controls = st.container()
 st_graph_area = st.container()
 st_info_box = st.container()
-with st_info_box:
-    st.write(f"Schema: {database_utils.database_schema}")
-with st_top_controls:
-    top_cols = st.columns(2)
-with st_bottom_controls:
-    bottom_cols = st.columns(2, gap='medium')
+st_info_box.write(f"Schema: {database_utils.database_schema}")
+top_cols = st_top_controls.columns(2)
+bottom_cols = st_bottom_controls.columns(2, gap='medium')
 
 all_params = database_utils.get_all_params()
 
@@ -24,13 +22,10 @@ unique_streams_list = all_params.apply(lambda r: (r['visit_observation_type_id']
 unique_streams = dict(unique_streams_list)
 if len(unique_streams_list) != len(unique_streams):
     # the DB schema should ensure this doesn't happen, but check
-    with st_graph_area:
-        st.error(f"WARNING: apparent ambiguous mapping in {unique_streams_list}")
+    st_graph_area.error(f"WARNING: apparent ambiguous mapping in {unique_streams_list}")
 
-with top_cols[0]:
-    location = st.selectbox("Choose location", sorted(set(all_params['source_location'])))
-with top_cols[1]:
-    stream_id = st.selectbox("Choose stream", unique_streams.keys(), format_func=lambda i: unique_streams[i])
+location = top_cols[0].selectbox("Choose location", sorted(set(all_params['source_location'])))
+stream_id = top_cols[1].selectbox("Choose stream", unique_streams.keys(), format_func=lambda i: unique_streams[i])
 
 
 def reset_times(gr):
@@ -41,44 +36,47 @@ def reset_times(gr):
 
 
 print(f"location = {location}, stream_id = {stream_id}")
+
+
 if not location:
     st.error("Please select a location")
 elif not stream_id:
     st.error("Please select a stream")
 else:
-    stream_label = unique_streams[stream_id]
-    stream_filter = (all_params['source_location'] == location) & (all_params['visit_observation_type_id'] == stream_id)
-    par = all_params[stream_filter]
-    min_time, max_time = database_utils.get_min_max_time_for_single_stream(int(par.iloc[0].visit_observation_type_id), par.iloc[0].source_location)
+    min_time, max_time = database_utils.get_min_max_time_for_single_stream(int(stream_id), location)
     min_time = min_time.to_pydatetime()
     max_time = max_time.to_pydatetime()
-    print(f"min={min_time}, max={max_time}")
-    if min_time is None:
-        st.error("No data for location found")
 
-    with bottom_cols[0]:
-        graph_start_time = st.slider("Start time", min_value=min_time, max_value=max_time, step=timedelta(seconds=1),
-                                     format="")
-    with bottom_cols[1]:
-        graph_width_seconds = st.slider("Chart duration (seconds)", min_value=1, max_value=30, value=30)
+    # (re-)initialise slider value if not known or if the bounds have changed so that it is now outside them
+    if 'slider_value' not in st.session_state or not min_time <= st.session_state.slider_value <= max_time:
+        st.session_state.slider_value = max(min_time, max_time - timedelta(seconds=15))
+    print(f"New bounds for stream {stream_id}, location {location}: min={min_time}, max={max_time}, value={st.session_state.slider_value}")
+    # BUG: error is given if there is exactly one point so min_time == max_time
+    graph_start_time = bottom_cols[0].slider("Start time",
+                                             min_value=min_time, max_value=max_time,
+                                             value=st.session_state.slider_value,
+                                             step=timedelta(seconds=1), format="")
+    st.session_state.slider_value = graph_start_time
+    if min_time is None:
+        st.error("No data for location+stream found")
+
+    graph_width_seconds = bottom_cols[1].slider("Chart duration (seconds)", min_value=1, max_value=30, value=30)
 
     graph_end_time = graph_start_time + timedelta(seconds=graph_width_seconds)
-    data = database_utils.get_data_single_stream_rounded(int(par.iloc[0].visit_observation_type_id), par.iloc[0].source_location,
+    data = database_utils.get_data_single_stream_rounded(int(stream_id), location,
                                                  min_time=graph_start_time, max_time=graph_end_time)
     trimmed = data[data['observation_datetime'].between(graph_start_time, graph_end_time)]
     waveform_units = trimmed['unit'].drop_duplicates().tolist()
     if len(waveform_units) > 1:
-        with st_graph_area:
-            st.error(f"duplicate units: {waveform_units}")
+        st_graph_area.error(f"duplicate units: {waveform_units}")
         waveform_unit = "n/a"
     elif len(waveform_units) == 0:
-        with st_graph_area:
-            st.error(f"no data over the given time period, try selecting another time")
+        st_graph_area.error(f"no data over the given time period, try selecting another time")
         waveform_unit = "n/a"
     else:
         waveform_unit = waveform_units[0]
 
-
+    stream_label = unique_streams[stream_id]
     chart = (
         alt.Chart(trimmed, width=1100, height=600)
         .mark_point(opacity=0.9)
@@ -106,6 +104,5 @@ else:
         #     alt.selection_interval(bind='scales')
         # )
     )
-    with st_graph_area:
-        st.altair_chart(chart, use_container_width=True)
+    st_graph_area.altair_chart(chart, use_container_width=True)
 
