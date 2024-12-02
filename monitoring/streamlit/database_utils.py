@@ -23,7 +23,7 @@ SET_SEARCH_PATH = f"set search_path to {database_schema};"
 engine = sqlalchemy.create_engine(database_url)
 
 
-@st.cache_data(ttl=1800)
+@st.cache_data(ttl=60)
 def get_all_params():
     with engine.connect() as con:
         return pd.read_sql_query(SET_SEARCH_PATH +
@@ -38,7 +38,7 @@ def get_all_params():
                                  """, con)
 
 
-@st.cache_data(ttl=1800)
+@st.cache_data(ttl=60)
 def get_min_max_time_for_single_stream(visit_observation_type_id, source_location):
     params = (visit_observation_type_id, source_location)
     query = SET_SEARCH_PATH + """
@@ -54,20 +54,27 @@ def get_min_max_time_for_single_stream(visit_observation_type_id, source_locatio
         return minmax.iloc[0].min_time, minmax.iloc[0].max_time
 
 
-def get_data_single_stream_rounded(visit_observation_type_id, source_location, min_time, max_time, max_row_length_seconds=30):
+def get_data_single_stream_rounded(visit_observation_type_id, source_location, graph_start_time, graph_end_time, max_time, max_row_length_seconds=30):
     # Because a row's observation_datetime is the time of the *first* data point in the array,
     # to get the data starting at time T, you have to query the DB for data a little earlier than T.
     # Additionally, to aid caching, round down further so repeated calls with
     # approximately similar values of min_time will result in exactly the
     # same query being issued (which is hopefully already cached)
-    actual_min_time = min_time - timedelta(seconds=max_row_length_seconds)
+    actual_min_time = graph_start_time - timedelta(seconds=max_row_length_seconds)
     rounded_seconds = actual_min_time.second // 10 * 10
     rounded_min_time = actual_min_time.replace(second=rounded_seconds, microsecond=0)
-    # For the same reason, round the max value up to the nearest few secondsA (5 is pretty arbitrary)
+    # For the same reason, round the max value up to the nearest few seconds (5 is pretty arbitrary)
     # (using +timedelta instead of replacing seconds value because you might hit 60 and have to wrap around)
-    rounded_max_time = max_time.replace(second=0, microsecond=0) + timedelta(seconds=math.ceil(max_time.second / 5) * 5)
-    print(f"Adjusted min time {min_time} -> {rounded_min_time}")
-    print(f"Adjusted max time {max_time} -> {rounded_max_time}")
+    # However, do not ask for data beyond what we know exists (max_time). We don't want
+    # the incomplete response to get cached.
+    rounded_max_time = (graph_end_time.replace(second=0, microsecond=0)
+                        + timedelta(seconds=math.ceil((graph_end_time.second + graph_end_time.microsecond/1_000_000) / 5) * 5))
+    capped_at_max = False
+    if rounded_max_time > max_time:
+        capped_at_max = True
+        rounded_max_time = max_time
+    print(f"Adjusted min time {graph_start_time} -> {rounded_min_time}")
+    print(f"Adjusted max time {graph_end_time} -> {rounded_max_time} {'(capped)' if capped_at_max else ''}")
     return get_data_single_stream(visit_observation_type_id, source_location, rounded_min_time, rounded_max_time)
 
 
