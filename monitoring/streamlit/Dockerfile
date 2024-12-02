@@ -12,4 +12,4 @@ CMD streamlit run \
     # Without this, websocket calls don't work behind nginx
     --browser.serverAddress ${SERVER_EXTERNAL_HOSTNAME} \
     --browser.serverPort ${PORTAL_PORT} \
-    st_app.py
+    st_home.py
