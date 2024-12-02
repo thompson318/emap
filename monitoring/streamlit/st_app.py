@@ -27,7 +27,8 @@ if len(unique_streams_list) != len(unique_streams):
 
 print(f"unique streams = ", unique_streams)
 location = top_cols[0].selectbox("Choose location", sorted(set(all_params['source_location'])))
-stream_id = top_cols[1].selectbox("Choose stream", unique_streams.keys(), format_func=lambda i: unique_streams[i])
+streams_for_location = all_params[all_params['source_location'] == location]['visit_observation_type_id']
+stream_id = top_cols[1].selectbox("Choose stream", streams_for_location, format_func=lambda i: unique_streams[i])
 
 
 print(f"location = {location}, stream_id = {stream_id}")
@@ -48,7 +49,9 @@ def draw_graph(min_time, max_time):
 
     graph_end_time = graph_start_time + timedelta(seconds=graph_width_seconds)
     data = database_utils.get_data_single_stream_rounded(int(stream_id), location,
-                                                         min_time=graph_start_time, max_time=graph_end_time)
+                                                         graph_start_time=graph_start_time,
+                                                         graph_end_time=graph_end_time,
+                                                         max_time=max_time)
     trimmed = data[data['observation_datetime'].between(graph_start_time, graph_end_time)]
     waveform_units = trimmed['unit'].drop_duplicates().tolist()
     if len(waveform_units) > 1:
