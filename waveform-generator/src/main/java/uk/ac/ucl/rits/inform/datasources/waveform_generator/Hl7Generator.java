@@ -295,22 +295,35 @@ public class Hl7Generator {
             Instant startTime, long numPatients, long numMillis) {
         List<String> waveformMsgs = new ArrayList<>();
         numPatients = Math.min(numPatients, possibleLocations.size());
+        List<SyntheticStream> syntheticStreams = List.of(
+                new SyntheticStream("52912", 50, 0.3, 5), // airway volume
+                new SyntheticStream("27", 300, 1.2, 10) // ECG
+        );
         for (int p = 0; p < numPatients; p++) {
             var location = possibleLocations.get(p);
-            String streamId1 = "52912"; // airway volume
-            String streamId2 = "27"; // ECG
             int sizeBefore = waveformMsgs.size();
             // each bed has a slightly different frequency
             double frequencyFactor =  0.95 + 0.1 * p / possibleLocations.size();
-            waveformMsgs.addAll(makeSyntheticWaveformMsgs(
-                    location, streamId1, 50, 0.3 * frequencyFactor, numMillis, startTime, 5));
-            waveformMsgs.addAll(makeSyntheticWaveformMsgs(
-                    location, streamId2, 300, 1.2 * frequencyFactor, numMillis, startTime, 10));
+            // don't turn on all streams for all patients to test more realistically
+            long streamsEnabledBitPattern = ~p; // p = 0 has all streams enabled, etc
+            for (int si = 0; si < syntheticStreams.size(); si++) {
+                boolean thisStreamEnabled = 0 != ((streamsEnabledBitPattern >> si) & 1);
+                if (!thisStreamEnabled) {
+                    continue;
+                }
+                SyntheticStream stream = syntheticStreams.get(si);
+                waveformMsgs.addAll(makeSyntheticWaveformMsgs(
+                        location, stream.streamId, stream.samplingRate,
+                        stream.baselineSignalFrequency * frequencyFactor, numMillis, startTime, stream.maxSamplesPerMessage));
+            }
             int sizeAfter = waveformMsgs.size();
             logger.debug("Patient {} (location {}), generated {} messages", p, location, sizeAfter - sizeBefore);
         }
 
         return waveformMsgs;
+    }
+
+    record SyntheticStream(String streamId, int samplingRate, double baselineSignalFrequency, int maxSamplesPerMessage) {
     }
 
     private class GeneratorContext {
