@@ -109,3 +109,28 @@ def get_data_single_stream(visit_observation_type_id, source_location, min_time,
     with engine.connect() as con:
         data = pd.read_sql_query(query, con, params=params)
     return data
+
+
+def get_waveform_coverage(visit_observation_type_id, source_location, min_time, max_time):
+    query = SET_SEARCH_PATH + """
+                             SELECT
+                                 w.waveform_id,
+                                 w.observation_datetime AS base_observation_datetime,
+                                 w.observation_datetime + make_interval(secs => (v.ordinality - 1)::float / w.sampling_rate) AS observation_datetime,
+                                 cardinality(w.values_array),
+                                 w.sampling_rate,
+                                 w.source_location,
+                                 w.unit,
+                                 w.location_visit_id,
+                                 w.visit_observation_type_id
+                             FROM WAVEFORM w
+                             WHERE visit_observation_type_id = %s AND source_location = %s
+                               AND observation_datetime >= %s
+                               AND observation_datetime <= %s
+                             ORDER BY observation_datetime
+                             """
+    # print(f"qry = {query}, params = {params}")
+    with engine.connect() as con:
+        data = pd.read_sql_query(query, con,
+                                 params=(visit_observation_type_id, source_location, min_time, max_time))
+    return data
