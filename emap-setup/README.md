@@ -41,6 +41,15 @@ e.g. `/gae/emap-<schema name>`.
 
 For example, create and activate a virtual environment first with either:
 
+<details><summary>uv</summary>
+
+```bash
+cd EMAP
+uv venv --python 3.11
+source .venv/bin/activate
+```
+</details>
+
 <details><summary>Conda</summary>
 
 ```bash
@@ -63,6 +72,7 @@ then clone and install
 ```bash
 git clone https://github.com/UCLH-DHCT/emap
 cd emap-setup
+# (or uv pip install... if using uv)
 pip install -e . -r requirements.txt
 cp global-configuration-EXAMPLE.yaml ../../global-configuration.yaml
 ```
