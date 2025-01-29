@@ -10,6 +10,8 @@
   <name>Emap Star Schema</name>
 
   <properties>
+    <!-- apparently needed for IntelliJ to pick up the right target version, even though it's specified in the maven-compiler-plugin later -->
+    <maven.compiler.target>${java.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <checkstyle.version>10.3.1</checkstyle.version>
     <checkstyle.plugin.version>3.3.0</checkstyle.plugin.version>
@@ -34,8 +36,7 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven-compiler-plugin.version}</version>
           <configuration>
-            <source>${java.version}</source>
-            <target>${java.version}</target>
+            <release>${java.version}</release>
             <forceJavacCompilerUse>true</forceJavacCompilerUse>
           </configuration>
         </plugin>

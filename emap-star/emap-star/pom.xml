@@ -15,6 +15,7 @@
   </parent>
 
   <properties>
+    <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <emap-star-annotations.version>2.7</emap-star-annotations.version>
     <reflections.version>0.10.2</reflections.version>
@@ -112,6 +113,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>${java.version}</release>
+          <forceJavacCompilerUse>true</forceJavacCompilerUse>
+        </configuration>
       </plugin>
     </plugins>
   </build>
