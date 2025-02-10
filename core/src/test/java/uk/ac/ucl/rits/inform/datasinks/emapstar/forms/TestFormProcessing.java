@@ -67,7 +67,7 @@ public class TestFormProcessing extends MessageProcessingBase {
         _processForms();
 
         // implied from forms above
-        assertEquals(8, formQuestionRepository.count());
+        assertEquals(9, formQuestionRepository.count());
         assertEquals(1, formDefinitionRepository.count());
         // no updates yet
         assertEquals(0, formQuestionAuditRepository.count());
@@ -76,7 +76,7 @@ public class TestFormProcessing extends MessageProcessingBase {
         // pick just one form instance to inspect in more detail
         Map<String, FormAnswer> answersByIdPreMetadata = getAnswersByConceptId("22345677");
         assertEquals(Instant.parse("2018-11-01T15:39:15Z"), answersByIdPreMetadata.get("UCLH#1167").getFormId().getFirstFiledDatetime());
-        Set<String> expectedQuestions = Set.of("UCLH#1167", "UCLH#1205", "FAKE#0001", "FAKE#0003", "FAKE#0004", "FAKE#0005", "FAKE#0006", "FAKE#0007");
+        Set<String> expectedQuestions = Set.of("UCLH#1167", "UCLH#1205", "FAKE#0001", "FAKE#0003", "FAKE#0004", "FAKE#0005", "FAKE#0006", "FAKE#0007", "FAKE#0009");
         assertEquals(expectedQuestions, answersByIdPreMetadata.keySet());
 
         // updates should have created some audit rows
@@ -101,6 +101,9 @@ public class TestFormProcessing extends MessageProcessingBase {
         assertEquals("1.01", answersByIdPreMetadata.get("FAKE#0005").getValueAsText());
         assertEquals(1.01, answersByIdPreMetadata.get("FAKE#0005").getValueAsNumber());
 
+        assertEquals("1", answersByIdPreMetadata.get("FAKE#0009").getValueAsText());
+        assertEquals(1, answersByIdPreMetadata.get("FAKE#0009").getValueAsNumber());
+
         // all question concept names should be unknown because there was no metadata in the form data
         for (FormAnswer fa : answersByIdPreMetadata.values()) {
             assertNull(fa.getFormQuestionId().getConceptName());
@@ -111,10 +114,10 @@ public class TestFormProcessing extends MessageProcessingBase {
         assertNull(formDef.getName());
 
         // Metadata contains 2 form definition of which we already knew about one;
-        // Metadata also contains 10 questions, of which 9 previously unknown, to add to the 8 previously implied.
-        // Hence 2 form definitions and 8 + 9 = 17 questions.
+        // Metadata also contains 10 questions, of which 9 previously unknown, to add to the 9 previously implied.
+        // Hence 2 form definitions and 9 + 9 = 18 questions.
         _processMetadata();
-        assertEquals(17, formQuestionRepository.count());
+        assertEquals(18, formQuestionRepository.count());
         assertEquals(2, formDefinitionRepository.count());
 
         // some audit rows should have been created due to the updates

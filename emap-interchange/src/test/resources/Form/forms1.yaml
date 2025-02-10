@@ -135,6 +135,19 @@
         "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
         status: "SAVE"
         value: "0"
+    - "@class": "uk.ac.ucl.rits.inform.interchange.form.FormAnswerMsg"
+      sourceMessageId: 72579
+      questionId: "FAKE#0009"
+      context: "NOTE"
+      filedDatetime: "2018-11-01T15:39:16Z"
+      numericValue:
+        "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
+        status: "SAVE"
+        value: 1
+      stringValue:
+        "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
+        status: "SAVE"
+        value: "1"
 
 - "@class": "uk.ac.ucl.rits.inform.interchange.form.FormMsg"
   sourceSystem: "ids"
