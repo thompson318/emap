@@ -67,7 +67,7 @@ public class TestFormProcessing extends MessageProcessingBase {
         _processForms();
 
         // implied from forms above
-        assertEquals(9, formQuestionRepository.count());
+        assertEquals(10, formQuestionRepository.count());
         assertEquals(1, formDefinitionRepository.count());
         // no updates yet
         assertEquals(0, formQuestionAuditRepository.count());
@@ -76,14 +76,14 @@ public class TestFormProcessing extends MessageProcessingBase {
         // pick just one form instance to inspect in more detail
         Map<String, FormAnswer> answersByIdPreMetadata = getAnswersByConceptId("22345677");
         assertEquals(Instant.parse("2018-11-01T15:39:15Z"), answersByIdPreMetadata.get("UCLH#1167").getFormId().getFirstFiledDatetime());
-        Set<String> expectedQuestions = Set.of("UCLH#1167", "UCLH#1205", "FAKE#0001", "FAKE#0003", "FAKE#0004", "FAKE#0005", "FAKE#0006", "FAKE#0007", "FAKE#0009");
+        Set<String> expectedQuestions = Set.of("UCLH#1167", "UCLH#1205", "FAKE#0001", "FAKE#0003", "FAKE#0004", "FAKE#0005", "FAKE#0006", "FAKE#0007", "FAKE#0009", "EMAP_SDE_NOTE");
         assertEquals(expectedQuestions, answersByIdPreMetadata.keySet());
 
         // updates should have created some audit rows
         assertEquals(0, formAuditRepository.count());
         assertEquals(3, formAnswerAuditRepository.count());
-        assertEquals(1, formAnswerAuditRepository.findAllByInternalId("72577").size());
-        assertEquals(2, formAnswerAuditRepository.findAllByInternalId("72570").size());
+        assertEquals(1, formAnswerAuditRepository.findAllByInternalId("HLV_ID$72577").size());
+        assertEquals(2, formAnswerAuditRepository.findAllByInternalId("HLV_ID$72570").size());
 
         // check some values
         assertEquals("abcabc", answersByIdPreMetadata.get("UCLH#1167").getValueAsText());
@@ -91,12 +91,14 @@ public class TestFormProcessing extends MessageProcessingBase {
 
         assertEquals("1", answersByIdPreMetadata.get("UCLH#1205").getValueAsText());
         assertEquals(true, answersByIdPreMetadata.get("UCLH#1205").getValueAsBoolean());
+        assertEquals(Instant.parse("2019-05-02T15:39:15Z"), answersByIdPreMetadata.get("UCLH#1205").getFiledDatetime());
 
         assertEquals("2021-02-04", answersByIdPreMetadata.get("FAKE#0003").getValueAsText());
         assertEquals(LocalDate.parse("2021-02-04"), answersByIdPreMetadata.get("FAKE#0003").getValueAsDate());
 
         assertEquals("2020-04-05T01:02:00.00Z", answersByIdPreMetadata.get("FAKE#0004").getValueAsText());
         assertEquals(Instant.parse("2020-04-05T01:02:00.00Z"), answersByIdPreMetadata.get("FAKE#0004").getValueAsDatetime());
+        assertEquals(Instant.parse("2018-11-01T15:39:15Z"), answersByIdPreMetadata.get("FAKE#0004").getFiledDatetime());
 
         assertEquals("1.01", answersByIdPreMetadata.get("FAKE#0005").getValueAsText());
         assertEquals(1.01, answersByIdPreMetadata.get("FAKE#0005").getValueAsNumber());
@@ -104,9 +106,15 @@ public class TestFormProcessing extends MessageProcessingBase {
         assertEquals("1", answersByIdPreMetadata.get("FAKE#0009").getValueAsText());
         assertEquals(1, answersByIdPreMetadata.get("FAKE#0009").getValueAsNumber());
 
-        // all question concept names should be unknown because there was no metadata in the form data
+        // SDE note keeps its original timestamp (it doesn't change value), in contrast to normal SDEs which should update
+        assertEquals("a very long note 066", answersByIdPreMetadata.get("EMAP_SDE_NOTE").getValueAsText());
+        assertEquals(Instant.parse("2018-11-01T15:39:15Z"), answersByIdPreMetadata.get("EMAP_SDE_NOTE").getFiledDatetime());
+
         for (FormAnswer fa : answersByIdPreMetadata.values()) {
+            // all question concept names should be unknown because there was no metadata in the form data
             assertNull(fa.getFormQuestionId().getConceptName());
+            // validFrom and filed date are synonymous in this case
+            assertEquals(fa.getValidFrom(), fa.getFiledDatetime(), fa.toString());
         }
         // pick any question to reach the form definition
         FormDefinition formDef = answersByIdPreMetadata.get("UCLH#1167").getFormId().getFormDefinitionId();
@@ -114,10 +122,10 @@ public class TestFormProcessing extends MessageProcessingBase {
         assertNull(formDef.getName());
 
         // Metadata contains 2 form definition of which we already knew about one;
-        // Metadata also contains 10 questions, of which 9 previously unknown, to add to the 9 previously implied.
-        // Hence 2 form definitions and 9 + 9 = 18 questions.
+        // Metadata also contains 10 questions, of which 9 previously unknown, to add to the 10 previously implied.
+        // Hence 2 form definitions and 9 + 10 = 19 questions.
         _processMetadata();
-        assertEquals(18, formQuestionRepository.count());
+        assertEquals(19, formQuestionRepository.count());
         assertEquals(2, formDefinitionRepository.count());
 
         // some audit rows should have been created due to the updates
