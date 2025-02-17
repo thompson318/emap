@@ -410,8 +410,7 @@ public class InterchangeMessageFactory {
             // All answers should have the same filing time, perhaps an argument for moving this to the form?
             // A form without any answers is invalid.
             Instant answersFiledDatetime = msg.getFormAnswerMsgs().get(0).getFiledDatetime();
-            msg.setSourceMessageId(String.format("%s_%s_%s_%s", msg.getFirstFiledDatetime(), answersFiledDatetime, msg.getMrn(), msg.getFormId()));
-            msg.setFormInstanceId(String.format("%s_%s_%s", msg.getFirstFiledDatetime(), msg.getMrn(), msg.getFormId()));
+            msg.setSourceMessageId(String.format("%s_%s_%s", msg.getFirstFiledDatetime(), answersFiledDatetime, msg.getFormInstanceId()));
         }
         return formMsgs;
     }
