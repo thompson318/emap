@@ -1,5 +1,8 @@
 package uk.ac.ucl.rits.inform.datasources.waveform_generator;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -30,6 +33,7 @@ public class Hl7Generator {
     @Value("${waveform.synthetic.num_patients:30}")
     private int numPatients;
 
+    private final GeneratorContext generatorContext = new GeneratorContext();
 
     /**
      * The generator can be run in "live" or "catch-up" mode.
@@ -117,7 +121,7 @@ public class Hl7Generator {
         int numChunks = 0;
         Instant progressAtStart = progressDatetime;
         while (progressDatetime.isBefore(getExpectedProgressDatetime())) {
-            logger.info("Making HL7 messages");
+            logger.info("Making HL7 messages starting at time {} for {} milliseconds", progressDatetime, millisPerChunk);
             List<String> synthMsgs = makeSyntheticWaveformMsgsAllPatients(progressDatetime, numPatients, millisPerChunk);
             logger.info("Sending {} HL7 messages", synthMsgs.size());
             // To avoid the worker threads in the reader being blocked trying to write to the
@@ -226,6 +230,7 @@ public class Hl7Generator {
      * @param locationId where the data originates from (machine/bed location)
      * @param streamId identifier for the stream
      * @param samplingRate in samples per second
+     * @param signalFrequencyHz the signal baseline frequency (Hz)
      * @param numMillis number of milliseconds to produce data for
      * @param startTime observation time of the beginning of the period that the messages are to cover
      * @param maxSamplesPerMessage max samples per message (will split into multiple messages if needed)
@@ -234,25 +239,29 @@ public class Hl7Generator {
     private List<String> makeSyntheticWaveformMsgs(final String locationId,
                                                    final String streamId,
                                                    final long samplingRate,
+                                                   final double signalFrequencyHz,
                                                    final long numMillis,
                                                    final Instant startTime,
                                                    final long maxSamplesPerMessage
     ) {
         List<String> allMessages = new ArrayList<>();
-        final long numSamples = numMillis * samplingRate / 1000;
+        final long numSamplesThisCall = numMillis * samplingRate / 1000;
         final double maxValue = 999;
-        for (long overallSampleIdx = 0; overallSampleIdx < numSamples;) {
-            long microsAfterStart = overallSampleIdx * 1000_000 / samplingRate;
+        GeneratorContext.GeneratorContextRecord context = generatorContext.getContext(locationId, streamId);
+        // This counter persists over repeated calls to this function to avoid the input
+        // to sin being reset to zero every few seconds
+        long persistentSampleIdx = context.getCounter();
+        for (int thisCallCounter = 0; thisCallCounter < numSamplesThisCall;) {
+            long microsAfterStart = thisCallCounter * 1000_000L / samplingRate;
             Instant messageStartTime = startTime.plus(microsAfterStart, ChronoUnit.MICROS);
             String timeStr = DateTimeFormatter.ofPattern("HHmmss").format(startTime.atOffset(ZoneOffset.UTC));
-            String messageId = String.format("%s_s%s_t%s_msg%05d", locationId, streamId, timeStr, overallSampleIdx);
+            String messageId = String.format("%s_s%s_t%s_msg%05d", locationId, streamId, timeStr, persistentSampleIdx);
 
             var values = new ArrayList<Double>();
             for (long valueIdx = 0;
-                 valueIdx < maxSamplesPerMessage && overallSampleIdx < numSamples;
-                 valueIdx++, overallSampleIdx++) {
-                // a sine wave between maxValue and -maxValue
-                values.add(2 * maxValue * Math.sin(overallSampleIdx * 0.01) - maxValue);
+                 valueIdx < maxSamplesPerMessage && thisCallCounter < numSamplesThisCall;
+                 valueIdx++, thisCallCounter++, persistentSampleIdx++) {
+                values.add(maxValue * Math.sin(2 * Math.PI * signalFrequencyHz * persistentSampleIdx / samplingRate));
             }
 
             // Only one stream ID per HL7 message for the time being
@@ -261,6 +270,7 @@ public class Hl7Generator {
             String fullHl7message = applyHl7Template(samplingRate, locationId, messageStartTime, messageId, valuesByStreamId);
             allMessages.add(fullHl7message);
         }
+        context.setCounter(persistentSampleIdx);
         return allMessages;
     }
 
@@ -285,20 +295,57 @@ public class Hl7Generator {
             Instant startTime, long numPatients, long numMillis) {
         List<String> waveformMsgs = new ArrayList<>();
         numPatients = Math.min(numPatients, possibleLocations.size());
+        List<SyntheticStream> syntheticStreams = List.of(
+                new SyntheticStream("52912", 50, 0.3, 5), // airway volume
+                new SyntheticStream("27", 300, 1.2, 10) // ECG
+        );
         for (int p = 0; p < numPatients; p++) {
             var location = possibleLocations.get(p);
-            String streamId1 = "52912";
-            String streamId2 = "27";
             int sizeBefore = waveformMsgs.size();
-            waveformMsgs.addAll(makeSyntheticWaveformMsgs(
-                    location, streamId1, 50, numMillis, startTime, 5));
-            waveformMsgs.addAll(makeSyntheticWaveformMsgs(
-                    location, streamId2, 300, numMillis, startTime, 10));
+            // each bed has a slightly different frequency
+            double frequencyFactor =  0.95 + 0.1 * p / possibleLocations.size();
+            // don't turn on all streams for all patients to test more realistically
+            long streamsEnabledBitPattern = ~p; // p = 0 has all streams enabled, etc
+            for (int si = 0; si < syntheticStreams.size(); si++) {
+                boolean thisStreamEnabled = 0 != ((streamsEnabledBitPattern >> si) & 1);
+                if (!thisStreamEnabled) {
+                    continue;
+                }
+                SyntheticStream stream = syntheticStreams.get(si);
+                waveformMsgs.addAll(makeSyntheticWaveformMsgs(
+                        location, stream.streamId, stream.samplingRate,
+                        stream.baselineSignalFrequency * frequencyFactor, numMillis, startTime, stream.maxSamplesPerMessage));
+            }
             int sizeAfter = waveformMsgs.size();
             logger.debug("Patient {} (location {}), generated {} messages", p, location, sizeAfter - sizeBefore);
         }
 
         return waveformMsgs;
+    }
+
+    record SyntheticStream(String streamId, int samplingRate, double baselineSignalFrequency, int maxSamplesPerMessage) {
+    }
+
+    private class GeneratorContext {
+        private final Map<ImmutablePair<String, String>, GeneratorContextRecord> allContexts = new HashMap<>();
+
+        @AllArgsConstructor
+        class GeneratorContextRecord {
+            @Getter @Setter
+            private long counter;
+        }
+
+        public GeneratorContextRecord getContext(ImmutablePair<String, String> contextKey) {
+            return allContexts.computeIfAbsent(contextKey, k -> new GeneratorContextRecord(0));
+        }
+
+        public GeneratorContextRecord getContext(String locationId, String streamId) {
+            return getContext(GeneratorContext.makeKey(locationId, streamId));
+        }
+
+        public static ImmutablePair<String, String> makeKey(String locationId, String streamId) {
+            return new ImmutablePair<>(locationId, streamId);
+        }
     }
 
 }

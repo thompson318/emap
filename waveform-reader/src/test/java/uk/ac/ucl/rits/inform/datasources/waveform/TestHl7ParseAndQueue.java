@@ -10,10 +10,7 @@ import uk.ac.ucl.rits.inform.interchange.InterchangeValue;
 import uk.ac.ucl.rits.inform.interchange.visit_observations.WaveformMessage;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,9 +21,9 @@ import static uk.ac.ucl.rits.inform.datasources.waveform.Utils.readHl7FromResour
 @SpringJUnitConfig
 @SpringBootTest
 @ActiveProfiles("test")
-class TestHl7ParseAndSend {
+class TestHl7ParseAndQueue {
     @Autowired
-    private Hl7ParseAndSend hl7ParseAndSend;
+    private Hl7ParseAndQueue hl7ParseAndQueue;
 
     @Test
     void goodMessageSideRoom() throws IOException, URISyntaxException, Hl7ParseException {
@@ -51,7 +48,7 @@ class TestHl7ParseAndSend {
 
     void checkMessage(String hl7String, String expectedSourceLocation, String expectedMappedLocation)
             throws IOException, URISyntaxException, Hl7ParseException {
-        List<WaveformMessage> msgs = hl7ParseAndSend.parseHl7(hl7String);
+        List<WaveformMessage> msgs = hl7ParseAndQueue.parseHl7(hl7String);
         assertEquals(5, msgs.size());
         List<String> actualSource = msgs.stream().map(WaveformMessage::getSourceLocationString).distinct().toList();
         assertEquals(1, actualSource.size());
@@ -94,7 +91,7 @@ class TestHl7ParseAndSend {
     void messageWithMoreThanOneRepeat() throws IOException, URISyntaxException {
         String hl7String = readHl7FromResource("hl7/test1.hl7");
         String hl7WithReps = hl7String.replace("42.50^", "42.50~");
-        Hl7ParseException e = assertThrows(Hl7ParseException.class, () -> hl7ParseAndSend.parseHl7(hl7WithReps));
+        Hl7ParseException e = assertThrows(Hl7ParseException.class, () -> hl7ParseAndQueue.parseHl7(hl7WithReps));
         assertTrue(e.getMessage().contains("only be 1 repeat"));
     }
 
@@ -102,7 +99,7 @@ class TestHl7ParseAndSend {
     void messageWithConflictingLocation() throws IOException, URISyntaxException {
         String hl7String = readHl7FromResource("hl7/test1.hl7");
         String hl7WithReps = hl7String.replace("PV1||I|UCHT03ICURM08|", "PV1||I|UCHT03ICURM07|");
-        Hl7ParseException e = assertThrows(Hl7ParseException.class, () -> hl7ParseAndSend.parseHl7(hl7WithReps));
+        Hl7ParseException e = assertThrows(Hl7ParseException.class, () -> hl7ParseAndQueue.parseHl7(hl7WithReps));
         assertTrue(e.getMessage().contains("Unexpected location"));
     }
 

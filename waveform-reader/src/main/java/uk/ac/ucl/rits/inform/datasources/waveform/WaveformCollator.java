@@ -19,6 +19,11 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 @Component
+/**
+ * Read interchange messages produced by {@link Hl7ParseAndQueue}, identify
+ * contiguous data to turn them into bigger interchange messages for greater
+ * DB storage efficiency.
+ */
 public class WaveformCollator {
     private final Logger logger = LoggerFactory.getLogger(WaveformCollator.class);
     protected final Map<Pair<String, String>, SortedMap<Instant, WaveformMessage>> pendingMessages = new HashMap<>();
@@ -155,10 +160,12 @@ public class WaveformCollator {
 
         int sizeBefore = perPatientMap.size();
         long sampleCount = 0;
-        Instant expectedNextDatetime = null;
+        WaveformMessage previousMsg = null;
         // existing values are not necessarily in mutable lists so use a new ArrayList
         List<Double> newNumericValues = new ArrayList<>();
         Iterator<Map.Entry<Instant, WaveformMessage>> perPatientMapIter = perPatientMap.entrySet().iterator();
+        // keep track of incoming message sizes for general interest (does not affect collation algorithm)
+        Map<Integer, Integer> uncollatedMessageSizes = new HashMap<>();
         int messagesToCollate = 0;
         while (perPatientMapIter.hasNext()) {
             Map.Entry<Instant, WaveformMessage> entry = perPatientMapIter.next();
@@ -168,27 +175,61 @@ public class WaveformCollator {
                 throw new CollationException(String.format("Key Mismatch: %s vs %s", firstKey, thisKey));
             }
 
-            sampleCount += msg.getNumericValues().get().size();
+            int thisMessageSampleCount = msg.getNumericValues().get().size();
+            int messageSizeCount = uncollatedMessageSizes.getOrDefault(thisMessageSampleCount, 0);
+            uncollatedMessageSizes.put(thisMessageSampleCount, messageSizeCount + 1);
+
+            // Ideally this code would be reworked, but for now it's important for sampleCount to meet or exceed
+            // targetCollatedMessageSamples even if we break out here (and thus don't include the current message).
+            // This is needed to prevent the check later on that would say the total sample count isn't big enough
+            // to make a message unless the data is old enough that we should collate regardless.
+            // Essentially, the later code is failing to realise that you can "meet" the target even if you're slightly
+            // short of it, because the next message would take us over the target.
+            sampleCount += thisMessageSampleCount;
             if (sampleCount > targetCollatedMessageSamples) {
-                logger.debug("Reached sample target ({} > {}), collated message span: {} -> {}",
-                        sampleCount, targetCollatedMessageSamples,
+                logger.debug("Reached sample target ({} > {}), collated message size {}, collated message span: {} -> {}",
+                        sampleCount, targetCollatedMessageSamples, sampleCount - thisMessageSampleCount,
                         firstMsg.getObservationTime(), msg.getObservationTime());
                 break;
             }
 
-            if (expectedNextDatetime != null) {
-                Instant gapUpperBound = checkGap(msg, expectedNextDatetime, assumedRounding);
-                if (gapUpperBound != null) {
-                    logger.info("Key {}, collated message span: {} -> {} ({} milliseconds, {} samples)",
+            if (previousMsg != null) {
+                Instant expectedNextDatetime = previousMsg.getExpectedNextObservationDatetime();
+                try {
+                    Instant gapUpperBound = checkGap(msg, expectedNextDatetime, assumedRounding);
+                    if (gapUpperBound != null) {
+                        logger.info("Key {} ({}Hz), collated message span: {} -> {} ({} milliseconds, {} messages, {} samples)",
+                                makeKey(msg),
+                                msg.getSamplingRate(),
+                                firstMsg.getObservationTime(),
+                                expectedNextDatetime,
+                                firstMsg.getObservationTime().until(expectedNextDatetime, ChronoUnit.MILLIS),
+                                messagesToCollate,
+                                sampleCount);
+                        // Found a gap, stop here, excluding `msg`.
+                        // Collation may still happen if data is old enough that we don't want to wait for more.
+                        break;
+                    }
+                } catch (CollationOverlapException coe) {
+                    logger.error("""
+                                    Key {} ({}Hz), {}, between:
+                                     previous message ({} -> {}) {} samples
+                                     this message     ({} -> {}) {} samples
+                                     """,
                             makeKey(msg),
-                            firstMsg.getObservationTime(), msg.getObservationTime(),
-                            firstMsg.getObservationTime().until(msg.getObservationTime(), ChronoUnit.MILLIS),
-                            sampleCount);
-                    // Found a gap, stop here. Decide later whether data is old enough to make a message anyway.
+                            msg.getSamplingRate(),
+                            coe.getMessage(),
+                            previousMsg.getObservationTime(), expectedNextDatetime,
+                            previousMsg.getNumericValues().get().size(),
+                            msg.getObservationTime(), msg.getExpectedNextObservationDatetime(),
+                            msg.getNumericValues().get().size());
+                    // The data can't be corrected, but we can at least stop collating at this point.
+                    // The overlapping message will be the first message of the next collation run,
+                    // which at least exposes the overlap in the database rather than trying to obscure it.
                     break;
                 }
             }
-            expectedNextDatetime = msg.getExpectedNextObservationDatetime();
+            previousMsg = msg;
 
             // don't modify yet, because we don't yet know if we will reach criteria to collate (num samples, time passed)
             messagesToCollate++;
@@ -197,13 +238,18 @@ public class WaveformCollator {
         // If we have not reached the message size threshold, whether because there aren't enough samples
         // or we reached a gap, then do not collate yet; give the data a bit more time to appear.
         // UNLESS enough time has already passed, then prioritise timeliness and collate anyway.
-        // (If the data does subsequently arrive, then it'll likely be "collated" into a message by itself)
+        // (If the data does subsequently arrive, then it'll be collated into a different message)
         // In other words, if not enough samples and not enough time has passed, then do not collate.
+        Instant expectedNextDatetime = previousMsg.getExpectedNextObservationDatetime();
         if (sampleCount < targetCollatedMessageSamples
                 && expectedNextDatetime.until(nowTime, ChronoUnit.MILLIS) <= waitForDataLimitMillis) {
             return null;
         }
 
+        logger.info("Collating {} messages into one. Total samples {}. Source messages contained sample counts: {}",
+                messagesToCollate, sampleCount, uncollatedMessageSizes);
+
+        // Do the actual collation now that we know how far to go.
         Iterator<Map.Entry<Instant, WaveformMessage>> secondPassIter = perPatientMap.entrySet().iterator();
         for (int i = 0; i < messagesToCollate; i++) {
             Map.Entry<Instant, WaveformMessage> entry = secondPassIter.next();
@@ -220,7 +266,7 @@ public class WaveformCollator {
         return firstMsg;
     }
 
-    private Instant checkGap(WaveformMessage msg, Instant expectedNextDatetime, ChronoUnit assumedRounding) {
+    private Instant checkGap(WaveformMessage msg, Instant expectedNextDatetime, ChronoUnit assumedRounding) throws CollationOverlapException {
         // gap between this message and previous message
         long gapSizeMicros = expectedNextDatetime.until(msg.getObservationTime(), ChronoUnit.MICROS);
         /* The timestamps in the messages will be rounded. Not sure if they round down or round to nearest.
@@ -245,8 +291,7 @@ public class WaveformCollator {
             // Overlap is an error that can't really be recovered from.
             // Would need to investigate whether the sampling rate is different to what we expected based on
             // metadata.
-            logger.error("OVERLAP of {} µs, between this message ({}) vs expected {}",
-                    gapSizeMicros, msg.getObservationTime(), expectedNextDatetime);
+            throw new CollationOverlapException(String.format("OVERLAP of %d µs", gapSizeMicros));
         }
 
         return null;
@@ -281,6 +326,11 @@ public class WaveformCollator {
 
     class CollationException extends Throwable {
         CollationException(String format) {
+        }
+    }
+    class CollationOverlapException extends CollationException {
+        CollationOverlapException(String format) {
+            super(format);
         }
     }
 }

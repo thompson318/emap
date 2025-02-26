@@ -30,7 +30,7 @@ import static uk.ac.ucl.rits.inform.datasources.waveform.Utils.readHl7FromResour
 @ActiveProfiles("test")
 class TestHl7FromFile {
     @Autowired
-    private Hl7ParseAndSend hl7ParseAndSend;
+    private Hl7ParseAndQueue hl7ParseAndQueue;
     @Autowired
     private WaveformCollator waveformCollator;
     @Autowired
