@@ -34,6 +34,7 @@ import java.time.Instant;
         @Index(name = "waveform_datetime", columnList = "observationDatetime"),
         @Index(name = "waveform_location", columnList = "sourceLocation"),
         @Index(name = "waveform_location_visit", columnList = "locationVisitId"),
+        @Index(name = "waveform_observation_type", columnList = "visitObservationTypeId"),
 })
 @Data
 @EqualsAndHashCode(callSuper = true)
