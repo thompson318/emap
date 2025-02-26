@@ -61,7 +61,7 @@ public class WaveformController {
                 locationVisitRepository.findLocationVisitByLocationAndTime(observationTime, msg.getMappedLocationString());
         // XXX: will have to do some sanity checks here to be sure that the HL7 feed hasn't gone down.
         // See issue #36, and here for discussion:
-        // https://github.com/UCLH-DHCT/emap/blob/jeremy/hf-data/docs/dev/features/waveform_hf_data.md#core-processor-logic-orphan-data-problem
+        // https://github.com/SAFEHR-data/emap/blob/develop/docs/dev/features/waveform_hf_data.md#core-processor-logic-orphan-data-problem
         Waveform dataRow = new Waveform(
                 observationTime,
                 observationTime,

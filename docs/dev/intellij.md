@@ -22,8 +22,8 @@ These setup instructions are aimed at developing in [IntelliJ IDEA](https://www.
 
     ```bash
     cd ~/projects/EMAP
-    git clone https://github.com/UCLH-DHCT/emap.git
-    git clone https://github.com/UCLH-DHCT/hoover.git
+    git clone https://github.com/SAFEHR-data/emap.git
+    git clone https://github.com/SAFEHR-data/hoover.git
     ```
 
 3. Open project in IntelliJ IDEA

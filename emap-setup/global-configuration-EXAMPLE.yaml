@@ -9,7 +9,7 @@
 
 
 git_org_url:
-  https://github.com/UCLH-DHCT
+  https://github.com/SAFEHR-data
 
 # note that the project name is used in naming docker containers, so this is how you will find them later!
 EMAP_PROJECT_NAME:

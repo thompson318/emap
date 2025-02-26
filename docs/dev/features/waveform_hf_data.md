@@ -73,7 +73,7 @@ But there is a tradeoff with timeliness. Since we don't append to arrays once wr
 data points to arrive before we can write them in one go. 3000 points at 300Hz is 10 seconds worth of data.
 Having to wait for too much data would mean that our aim to make Emap no more than 10-20 seconds out of date would
 no longer hold.
-(see also https://github.com/UCLH-DHCT/emap/issues/65 )
+(see also issue #65)
 
 As far as we know, there is no mechanism for correcting or updating waveform data,
 so the audit table will always be empty.
@@ -87,7 +87,7 @@ storage efficiency problems this would cause.
 
 ### Core processor logic (orphan data problem)
 
-See issue https://github.com/UCLH-DHCT/emap/issues/36
+See issue #36
 
 The HL7 messages that Emap has been ingesting up to this point tend to be highly redundant.
 Every message contains basic patient demographic/encounter data.
@@ -169,7 +169,7 @@ Using SQL arrays vastly improves the actual efficiency vs 1 per row.
 
 #### Further improvements
 
-See issue https://github.com/UCLH-DHCT/emap/issues/62 for a discussion of further improvements.
+See issue #62 for a discussion of further improvements.
 
 ### HL7 ingress
 
@@ -192,7 +192,7 @@ Can Smartlinx replay missed messages if we go down? No.
 Does Smartlinx support/require acknowledgement messages? No.
 
 Will we need to do our own buffering? Can we do the same sort of thing the IDS does?
-Maybe. See issue https://github.com/UCLH-DHCT/emap/issues/48 for why we might have to implement some sort of buffering.
+Maybe. See issue #48 for why we might have to implement some sort of buffering.
 
 HL7 messages are not particularly space efficient: messages from bedside monitors have ~40 measurements per message;
 ventilators have ~1-10 per message (50Hz); ECGs (300Hz) not known.

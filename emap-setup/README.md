@@ -70,7 +70,7 @@ source ~/.local/venvs/emap/bin/activate
 
 then clone and install 
 ```bash
-git clone https://github.com/UCLH-DHCT/emap
+git clone https://github.com/SAFEHR-data/emap
 cd emap-setup
 # (or uv pip install... if using uv)
 pip install -e . -r requirements.txt
