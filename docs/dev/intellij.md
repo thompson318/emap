@@ -24,6 +24,7 @@ These setup instructions are aimed at developing in [IntelliJ IDEA](https://www.
     cd ~/projects/EMAP
     git clone https://github.com/SAFEHR-data/emap.git
     git clone https://github.com/SAFEHR-data/hoover.git
+    git clone https://github.com/SAFEHR-data/internal_emap_documentation.git
     ```
 
 3. Open project in IntelliJ IDEA
