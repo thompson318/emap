@@ -6,7 +6,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.MessageProcessingBase;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.forms.FormAnswerAuditRepository;
-import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.forms.FormAnswerRepository;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.forms.FormAuditRepository;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.forms.FormDefinitionAuditRepository;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.forms.FormDefinitionRepository;
@@ -17,6 +16,7 @@ import uk.ac.ucl.rits.inform.informdb.forms.Form;
 import uk.ac.ucl.rits.inform.informdb.forms.FormAnswer;
 import uk.ac.ucl.rits.inform.informdb.forms.FormDefinition;
 import uk.ac.ucl.rits.inform.informdb.forms.FormQuestion;
+import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
 import uk.ac.ucl.rits.inform.interchange.EmapOperationMessageProcessingException;
 import uk.ac.ucl.rits.inform.interchange.form.FormMetadataMsg;
 import uk.ac.ucl.rits.inform.interchange.form.FormQuestionMetadataMsg;
@@ -74,7 +74,7 @@ public class TestFormProcessing extends MessageProcessingBase {
         assertEquals(0, formDefinitionAuditRepository.count());
 
         // pick just one form instance to inspect in more detail
-        Map<String, FormAnswer> answersByIdPreMetadata = getAnswersByConceptId("22345677");
+        Map<String, FormAnswer> answersByIdPreMetadata = getAnswersByVisitId("22345677");
         assertEquals(Instant.parse("2018-11-01T15:39:15Z"), answersByIdPreMetadata.get("UCLH#1167").getFormId().getFirstFiledDatetime());
         Set<String> expectedQuestions = Set.of("UCLH#1167", "UCLH#1205", "FAKE#0001", "FAKE#0003", "FAKE#0004", "FAKE#0005", "FAKE#0006", "FAKE#0007", "FAKE#0009", "EMAP_SDE_NOTE");
         assertEquals(expectedQuestions, answersByIdPreMetadata.keySet());
@@ -190,10 +190,12 @@ public class TestFormProcessing extends MessageProcessingBase {
         assertEquals(2, formRepository.count());
     }
 
-    private Map<String, FormAnswer> getAnswersByConceptId(String visitId) {
+    private Map<String, FormAnswer> getAnswersByVisitId(String visitId) {
         List<Form> forms = formRepository.findAllByHospitalVisitIdEncounter(visitId);
         assertEquals(1, forms.size());
         Form onlyForm = forms.get(0);
+        HospitalVisit hospitalVisit = onlyForm.getHospitalVisitId();
+        assertEquals("22345677", hospitalVisit.getEncounter());
         FormDefinition formDefinition = onlyForm.getFormDefinitionId();
         assertEquals("2056", formDefinition.getInternalId());
         return onlyForm.getFormAnswers().stream().collect(Collectors.toUnmodifiableMap(
