@@ -9,17 +9,17 @@ There are currently two data sources for EMAP:
 
 - HL7 data
     - Persisted in
-      the [Immutable Data Store](https://github.com/inform-health-informatics/emap_documentation/blob/main/technical_overview/Technical_overview_of_EMAP.md#immutable-data-store-ids)
+      the [Immutable Data Store](https://github.com/SAFEHR-data/emap/blob/main/docs/technical_overview/Technical_overview_of_EMAP.md#immutable-data-store-ids)
       (IDS), from a copy of specific HL7 message streams
     - The IDS is read by
-      the [HL7 reader](https://github.com/inform-health-informatics/emap_documentation/blob/main/technical_overview/Technical_overview_of_EMAP.md#hl7-reader),
+      the [HL7 reader](https://github.com/SAFEHR-data/emap/blob/main/docs/technical_overview/Technical_overview_of_EMAP.md#hl7-reader),
       (defined in the [hl7-reader](https://github.com/SAFEHR-data/emap/tree/main/hl7-reader) module)
       converting the HL7 message into a source-agnostic format (interchange message, defined in
       the [emap-interchange](https://github.com/SAFEHR-data/emap/tree/main/emap-interchange) module)
       and published to a rabbitMQ queue for processing by the core processor.
 - Hospital database polling
   -
-  The [Hoover](https://github.com/inform-health-informatics/emap_documentation/blob/main/technical_overview/Technical_overview_of_EMAP.md#hoover)
+  The [Hoover](https://github.com/SAFEHR-data/emap/blob/main/docs/technical_overview/Technical_overview_of_EMAP.md#hoover)
   (defined in the [hoover](https://github.com/SAFEHR-data/hoover) repository)
   service polls hospital databases (Clarity and Caboodle) for data that has changed since the last poll.
   It converts the query outputs into the interchange message and publishes these to a rabbitMQ queue for processing by
@@ -27,11 +27,11 @@ There are currently two data sources for EMAP:
   We can't make the Hoover repository public because the SQL queries contain the intellectual property of the hospital
   patient record system, EPIC.
 
-The [core processor](https://github.com/inform-health-informatics/emap_documentation/blob/main/technical_overview/Technical_overview_of_EMAP.md#the-eventprocessor)
+The [core processor](https://github.com/SAFEHR-data/emap/blob/main/docs/technical_overview/Technical_overview_of_EMAP.md#the-eventprocessor)
 (defined in the [core](https://github.com/SAFEHR-data/emap/tree/main/core) module) is responsible for processing the
 interchange messages and
 updating
-the [emap database](https://github.com/inform-health-informatics/emap_documentation/blob/main/technical_overview/Technical_overview_of_EMAP.md#star-schema)
+the [emap database](https://github.com/SAFEHR-data/emap/blob/main/docs/technical_overview/Technical_overview_of_EMAP.md#star-schema)
 (defined in the [emap-star](https://github.com/SAFEHR-data/emap/tree/main/emap-star) module).
 
 The core processor compares what is already known in the EMAP database, with the data in the interchange message and

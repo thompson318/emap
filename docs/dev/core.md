@@ -10,7 +10,7 @@ See [here for IntelliJ setup](intellij.md)
 
 ## Deploying a live version
 
-How to deploy an instance of Emap on the UCLH GAE, to be run on real patient data. [emap-setup](https://github.com/inform-health-informatics/emap-setup)
+How to deploy an instance of Emap on the UCLH GAE, to be run on real patient data. [emap-setup](/emap-setup)
 manages the multiple repositories and configuration files.
 
 
