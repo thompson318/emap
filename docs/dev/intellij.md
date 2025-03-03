@@ -22,8 +22,9 @@ These setup instructions are aimed at developing in [IntelliJ IDEA](https://www.
 
     ```bash
     cd ~/projects/EMAP
-    git clone https://github.com/UCLH-DHCT/emap.git
-    git clone https://github.com/UCLH-DHCT/hoover.git
+    git clone https://github.com/SAFEHR-data/emap.git
+    git clone https://github.com/SAFEHR-data/hoover.git
+    git clone https://github.com/SAFEHR-data/internal_emap_documentation.git
     ```
 
 3. Open project in IntelliJ IDEA
@@ -55,6 +56,7 @@ These setup instructions are aimed at developing in [IntelliJ IDEA](https://www.
    Go to <b>File > Settings > and searching for `processor`</b>
     - Check `enable annotation preprocessing`
     - Change the production sources directory to `classes` as below
+    - Enable "Run processors in a separate step..." as below
 
    ![preprocessor](img/annotation_processor.png)
 
@@ -140,3 +142,14 @@ Tests can also be run individually by clicking the play button on a class within
 ### For components which require a docker container to run tests
 
 Don't delete the fakeuds definition because it's needed for emap-in-a-box, and it will be needed if we bring the non-proprietary bits of hoover into this repo.
+
+### Troubleshooting
+
+It's common to get an "internal compiler error" when running tests from IntelliJ.
+This can be intermittent and rather frustrating to debug.
+Double-checking the settings on this page is recommended, especially re annotation processing.
+Sometimes it's better to use an older JDK that matches the target language version.
+In the project settings, make sure that all the language versions are set and/or being detected correctly.
+You can also try running `mvn clean` from the command line.
+To do so, you might need to [install maven separately](https://maven.apache.org/download.cgi)
+if you were so far only using the version bundled with IntelliJ.
