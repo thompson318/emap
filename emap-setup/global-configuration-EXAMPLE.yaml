@@ -82,7 +82,7 @@ dates:
 # Configurations for the UDS.
 uds:
   UDS_JDBC_URL: jdbc:postgresql://uds_db:5432/uds
-  UDS_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQL95Dialect
+  UDS_HIBERNATE_DIALECT: uk.ac.ucl.rits.inform.informdb.PostgreSQLEmapDialect
   UDS_SCHEMA: schemaname
   UDS_USERNAME: schemauser
   UDS_PASSWORD: schemapw
