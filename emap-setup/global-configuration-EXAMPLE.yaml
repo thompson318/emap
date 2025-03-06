@@ -94,6 +94,9 @@ glowroot:
   GLOWROOT_USERNAME: glowrootuser
   GLOWROOT_PASSWORD: glowrootpw
   GLOWROOT_ADMIN_PORT: 4000
+  MAX_HEAP_SIZE: 4G
+  HEAP_NEWSIZE: 800M
+
 
 # For testing outside the GAE, you can enable a fake UDS
 fake_uds:
