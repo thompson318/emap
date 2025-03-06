@@ -82,6 +82,7 @@ dates:
 # Configurations for the UDS.
 uds:
   UDS_JDBC_URL: jdbc:postgresql://uds_db:5432/uds
+  UDS_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQL95Dialect
   UDS_SCHEMA: schemaname
   UDS_USERNAME: schemauser
   UDS_PASSWORD: schemapw
@@ -97,6 +98,11 @@ glowroot:
 # For testing outside the GAE, you can enable a fake UDS
 fake_uds:
   enable_fake_uds: false
+
+# Emap in MSSQL
+fake_mssql:
+  enable_fake_mssql: false
+  MSSQL_SA_PASSWORD: your_password
 
 # config related to waveform data ingress
 waveform:

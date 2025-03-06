@@ -37,6 +37,7 @@ class DockerRunner:
         self.enable_waveform = first_not_none(enable_waveform, self.config.get("waveform", "enable_waveform"))
         self.use_fake_waveform = first_not_none(use_fake_waveform, self.config.get("waveform", "enable_waveform_generator"))
         self.use_fake_uds = first_not_none(use_fake_uds, self.config.get("fake_uds", "enable_fake_uds"))
+        self.use_fake_mssql = self.config.get("fake_mssql", "enable_fake_mssql")
 
     def run(
         self,
@@ -55,7 +56,7 @@ class DockerRunner:
 
         self._check_paths_exist()
 
-        cmd = self.base_docker_compose_command.split()
+        cmd = self.base_docker_compose_command
         for arg in docker_compose_args:
             cmd += [x.strip('"') for x in arg.split()]
 
@@ -84,15 +85,30 @@ class DockerRunner:
         return None
 
     @property
-    def base_docker_compose_command(self) -> str:
-        return (
-            "docker compose -f "
-            + " -f ".join(str(p) for p in self.docker_compose_paths)
-            + f' -p {self.config["EMAP_PROJECT_NAME"]} '
-        )
+    def base_docker_compose_command(self) -> list[str]:
+        cmd = ["docker", "compose"]
+        for p in self.docker_compose_file_paths:
+            cmd.extend(["-f", str(p)])
+        for pr in self.docker_compose_profiles:
+            cmd.extend(["--profile", str(pr)])
+        cmd.extend(["-p", self.config["EMAP_PROJECT_NAME"]])
+        return cmd
 
     @property
-    def docker_compose_paths(self) -> List[Path]:
+    def docker_compose_profiles(self) -> List[str]:
+        """Required Docker Compose profiles"""
+        profiles = []
+        if self.use_fake_uds and self.use_fake_mssql:
+            raise RuntimeError("cannot have both fake postgres and fake MSSQL")
+        elif self.use_fake_mssql:
+            profiles.append("fakeuds-mssql")
+        elif self.use_fake_uds:
+            profiles.append("fakeuds-pg")
+
+        return profiles
+
+    @property
+    def docker_compose_file_paths(self) -> List[Path]:
         """Paths of all the required docker-compose yamls"""
 
         paths = [
@@ -102,7 +118,7 @@ class DockerRunner:
         # Fakes are for testing only. Waveform is a real feature that is currently off
         # by default, except for the waveform generator which is for testing waveform
         # data only.
-        if self.use_fake_uds:
+        if self.use_fake_uds or self.use_fake_mssql:
             paths.append(Path(self.emap_dir, "core", "docker-compose.fakeuds.yml"))
         if self.enable_waveform:
             paths.append(Path(self.emap_dir, "waveform-reader", "docker-compose.yml"))
@@ -145,7 +161,7 @@ class DockerRunner:
     def _check_paths_exist(self) -> None:
         """Ensure all the docker compose files exist"""
 
-        paths = self.docker_compose_paths
+        paths = self.docker_compose_file_paths
 
         if not all(path.exists() for path in paths):
             _paths_str = "\n".join(str(p) for p in paths)
