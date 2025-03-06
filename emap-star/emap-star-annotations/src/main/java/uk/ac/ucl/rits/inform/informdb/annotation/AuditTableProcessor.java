@@ -421,11 +421,17 @@ public class AuditTableProcessor extends AbstractProcessor {
                 // If it's a normal column, then get the @Column properties
                 Column col = field.getAnnotation(Column.class);
                 if (col != null) {
+                    // Because all these values have defaults, we will generate code
+                    // that explicitly specifies the values even if they're not present in the source.
+                    // Confusingly, 255 is always the default length even when type = "text",
+                    // but it's ignored for that type (at least in postgres).
                     boolean nullable = col.nullable();
                     String columnDefinition = col.columnDefinition();
                     String name = col.name();
-                    annotation = String.format("\t@Column(columnDefinition = \"%s\", nullable=%s, name=\"%s\")",
-                            columnDefinition, nullable ? "true" : "false", name);
+                    int length = col.length();
+                    annotation = String.format(
+                            "\t@Column(columnDefinition = \"%s\", nullable=%s, name=\"%s\", length=%d)",
+                            columnDefinition, nullable ? "true" : "false", name, length);
                 }
             } else if (!isTemporal) {
                 // If it's a non-temporal FK then preserve the foreign key

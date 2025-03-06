@@ -91,8 +91,9 @@ public class LabResult extends TemporalCore<LabResult, LabResultAudit> {
 
     /**
      * \brief Value as bytes.
+     * Array length is maximum allowed by all of H2, Postgres, and SQL Server.
      */
-    @Column(columnDefinition = "bytea") //TODO should this be bytes not bytea
+    @Column(length = 1000000000)
     private byte[] valueAsBytes;
 
     /**
