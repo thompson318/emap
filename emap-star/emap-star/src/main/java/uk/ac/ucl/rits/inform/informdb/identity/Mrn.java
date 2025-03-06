@@ -67,7 +67,8 @@ public class Mrn implements Serializable {
      */
     private String nhsNumber;
 
-    @ColumnDefault("false")
+    // SQL Server requires 0, not false
+    @ColumnDefault("0")
     private boolean researchOptOut;
 
     /**
