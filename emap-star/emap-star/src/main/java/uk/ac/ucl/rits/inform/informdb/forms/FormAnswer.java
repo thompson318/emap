@@ -59,7 +59,6 @@ public class FormAnswer extends TemporalCore<FormAnswer, FormAnswerAudit> {
      * \brief The datetime this answer was filed. It may differ from Form.firstFiledDatetime
      * if this form answer has been updated since the form was first filed.
      */
-    @Column(columnDefinition = "timestamp with time zone")
     private Instant filedDatetime;
 
     /**
@@ -94,7 +93,6 @@ public class FormAnswer extends TemporalCore<FormAnswer, FormAnswerAudit> {
      * \brief Current value of the form if it's a timestamp, else null.
      * .
      */
-    @Column(columnDefinition = "timestamp with time zone")
     private Instant valueAsDatetime;
 
     /**

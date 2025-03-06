@@ -73,13 +73,11 @@ public class ConsultationRequest extends TemporalCore<ConsultationRequest, Consu
     /**
      * \brief Date and time at which this consultationRequest was last updated.
      */
-    @Column(columnDefinition = "timestamp with time zone")
     private Instant statusChangeDatetime;
 
     /**
      * \brief Date and time at which this consultationRequest was scheduled.
      */
-    @Column(columnDefinition = "timestamp with time zone")
     private Instant scheduledDatetime;
 
     /**

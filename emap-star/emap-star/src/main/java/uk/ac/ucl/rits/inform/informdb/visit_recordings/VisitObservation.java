@@ -73,7 +73,7 @@ public class VisitObservation extends TemporalCore<VisitObservation, VisitObserv
      *
      * The validFrom {@link TemporalCore#getValidFrom()} is the recording time, or last updated time.
      */
-    @Column(columnDefinition = "timestamp with time zone", nullable = false)
+    @Column(nullable = false)
     private Instant observationDatetime;
 
     /**

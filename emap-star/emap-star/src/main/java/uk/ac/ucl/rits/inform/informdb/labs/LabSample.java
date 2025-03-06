@@ -59,7 +59,6 @@ public class LabSample extends TemporalCore<LabSample, LabSampleAudit> {
      *
      * where there test was being performed.
      */
-    @Column(columnDefinition = "timestamp with time zone")
     private Instant receiptAtLabDatetime;
 
     /**
@@ -67,7 +66,6 @@ public class LabSample extends TemporalCore<LabSample, LabSampleAudit> {
      *
      * (e.g. time of phlebotomy).
      */
-    @Column(columnDefinition = "timestamp with time zone")
     private Instant sampleCollectionDatetime;
 
     /**

@@ -44,13 +44,13 @@ public class Question {
     /**
      * \brief Date and time from which this question is stored.
      */
-    @Column(columnDefinition = "timestamp with time zone", nullable = false)
+    @Column(nullable = false)
     private Instant storedFrom;
 
     /**
      * \brief Date and time from which this question is valid.
      */
-    @Column(columnDefinition = "timestamp with time zone", nullable = false)
+    @Column(nullable = false)
     private Instant validFrom;
 
     /**
