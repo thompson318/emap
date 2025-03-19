@@ -12,14 +12,16 @@ Code to initialise, update and run EMAP. Includes ability to:
 There should be one installation of `emap-setup` for each deployment of emap, each installed inside a venv named
 `venv` at the top level of the source directory for the EMAP deployment.
 
+See https://uclh.slab.com/posts/shared-virtual-python-environments-with-uv-u7pa2fv4 for main instructions.
+
 Initial creation of the venv:
 ```shell
 cd /gae/emap-deployment-name  # eg /gae/emap-dev
-python -m venv venv --prompt "emap-deployment-name"  # prompt so we can tell which venv we're in
+uv venv .venv-emap-deployment-name   # venv name will go in the prompt so good to name it clearly
 
 # install setup script in editable mode
 cd /gae/emap-deployment-name/emap/emap-setup
-pip install -e . -r requirements.txt
+uv pip install -e . -r requirements.txt
 ```
 
 For an existing deployment it should already exist, so just activate it:

@@ -17,6 +17,7 @@ manages the multiple repositories and configuration files.
 1. <details>
     <summary>Create a directory with the correct permissions</summary>
 
+   See [main instructions for creating a directory that will inherit permissions correctly](https://uclh.slab.com/posts/shared-virtual-python-environments-with-uv-u7pa2fv4#hpkxd-per-gae-setup-tasks)
     > **Note**
     > These folders probably already exist in `/gae`. Create a new one only if a new schema is availible
 
@@ -71,7 +72,7 @@ manages the multiple repositories and configuration files.
 3. <details>
     <summary>Install <b>emap-setup</b></summary>
    
-    See the [emap-setup README](/emap-setup/README.md) for details
+    See the [emap-setup README](../../emap-setup/README.md) for details
 
 </details>
 
