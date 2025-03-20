@@ -9,8 +9,8 @@ Code to initialise, update and run EMAP. Includes ability to:
 
 ## Usage: GAE
 
-There should be one installation of `emap-setup` for each deployment of emap, each installed inside a venv named
-`venv` at the top level of the source directory for the EMAP deployment.
+There should be one installation of `emap-setup` for each deployment of emap, each installed inside a venv
+at the top level of the source directory for the EMAP deployment.
 
 See https://uclh.slab.com/posts/shared-virtual-python-environments-with-uv-u7pa2fv4 for main instructions.
 
@@ -73,7 +73,7 @@ source ~/.local/venvs/emap/bin/activate
 then clone and install 
 ```bash
 git clone https://github.com/SAFEHR-data/emap
-cd emap-setup
+cd emap/emap-setup
 # (or uv pip install... if using uv)
 pip install -e . -r requirements.txt
 cp global-configuration-EXAMPLE.yaml ../../global-configuration.yaml

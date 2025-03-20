@@ -8,36 +8,50 @@ otherwise the message will have no effect. This is important because the HL7 mes
 
 See [here for IntelliJ setup](intellij.md)
 
-## Deploying a live version
+## Deploying an Emap instance
 
-How to deploy an instance of Emap on the UCLH GAE, to be run on real patient data. [emap-setup](/emap-setup)
-manages the multiple repositories and configuration files.
+How to deploy an instance of Emap on
+- your own machine; or
+- the UCLH GAE, with access to real patient data.
 
+The [`emap` script](../../emap-setup) is used to manage the multiple repositories and configuration files.
 
-1. <details>
-    <summary>Create a directory with the correct permissions</summary>
+### Per-person one-off tasks
 
-   See [main instructions for creating a directory that will inherit permissions correctly](https://uclh.slab.com/posts/shared-virtual-python-environments-with-uv-u7pa2fv4#hpkxd-per-gae-setup-tasks)
-    > **Note**
-    > These folders probably already exist in `/gae`. Create a new one only if a new schema is availible
+Create a [personal access token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) 
+for the next step and allow your username and access token to be saved with
 
+```shell
+git config --global credential.helper store
+```
 
-    Find a place to put the source code. If this instance is not attached to a person, a directory in `/gae` is a good place. For example, `/gae/emap-live/`, and this will be the example used in these instructions.
-    e.g.
-    
-    ```bash
-    mkdir /gae/emap-live
-    chgrp -R docker /gae/emap-live
-    chmod -R g+rws /gae/emap-live  # ensures that the group will be inherited for any new directories or files
-    setfacl -R -m d:g::rwX /gae/emap-live
-    ```
-    <!-- Changed back from chmod -R g+rwx as permissions weren't transferred as in the readme. If this is a problem again then we should think about it
-    <img width="590" alt="image" src="https://user-images.githubusercontent.com/8124189/210367021-32ac429f-950e-4acb-a1f8-b095eb4616cd.png">
-    -->
-    
-    to create, modify the group, change ownership and inherit permissions.
-    
-    When you then create directories and files in this directory they should look like this:
+**Note**: this will allow storage of the connection information in plain text in your home directory. We use https 
+as a default but SSH is also possible.
+
+### Per-machine tasks
+
+For the GAE, see [GAE shared env doc](https://uclh.slab.com/posts/shared-virtual-python-environments-with-uv-u7pa2fv4#hpkxd-per-gae-setup-tasks)
+and follow instructions on setting up `uv`.
+
+For any other machine, it's also recommended to use `uv`, but you could instead use conda or venv.
+
+### Per-Emap instance setup tasks
+
+#### Create a directory with the correct permissions
+> [!IMPORTANT]
+> GAE only.
+
+> [!NOTE]
+> If the Emap instance already exists, see instead [how to switch between Emap instances](#switching-emap-instances)
+
+See [main instructions for creating a directory that will inherit permissions correctly](https://uclh.slab.com/posts/shared-virtual-python-environments-with-uv-u7pa2fv4#hizbb-per-project-setup-tasks)
+
+You need to run the function defined in that doc as shown below:
+
+`create_shared_dir /gae/emap-instance-name`
+
+<details>
+    <summary>What should the file contents look like? (example)</summary>
     
     ```bash
     $ ls -la /gae/emap-live
@@ -55,103 +69,133 @@ manages the multiple repositories and configuration files.
    
 </details>
 
-2. <details>
-    <summary>Set the git configuration</summary>
+#### Clone this repo
 
-    Create a [personal access token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) 
-    for the next step and allow your username and access token to be saved with
+Clone the repo and prevent any pushing to the remote. This is an extra layer of defence against leaking secrets.
+```bash
+cd /gae/emap-instance-name
+git clone https://github.com/SAFEHR-data/emap
+cd emap
+git remote set-url --push origin no_push.example.com
+```
 
-    ```shell
-    git config --global credential.helper store
-    ```
+Verify that this has worked:
+```
+$ git remote -vv
+origin  https://github.com/SAFEHR-data/emap (fetch)
+origin  no_push.example.com (push)
+```
 
-    **Note**: this will allow storage of the connection information in plain text in your home directory. We use https 
-    as a default but SSH is also possible.
+#### Install <b>emap-setup</b>
+See the [emap-setup README](../../emap-setup/README.md) for install instructions
+
+#### Modify configuration
+Modify `global-configuration.yaml`, adding passwords, usernames and URLs for your setup.
+
+Then run `emap setup -g` to propagate the config into the individual `config/xxx-config-envs` configuration files.
+
+Config tips:
+- On the GAE we use an external postgres server (the "UDS"). See `fake_uds` for enabling postgres in a docker container for non-GAE setups.
+- Be sure to set `UDS_SCHEMA` to match the name/purpose of the instance that you are deploying. This schema must already exist.
+- Use the database user that has the minimum permissions necessary for your task. Ie. only the live user can write to live, so important to reserve use of this user for this purpose only. (See Lastpass for details)
+- If you're running on your own machine, you can set `EMAP_PROJECT_NAME` to whatever you like. If running on the GAE it should be the same as the current directory (i.e. `emap-test` if in `/gae/emap-test`)
+- All passwords must be strong. Remember that Emap needs to expose certain ports outside the GAE to operate.
+- All config must stay local and not be committed to git.
+
+#### Clone the other repositories
+
+> [!INFO]
+> Historical note: Since moving to the monorepo, the importance of the `emap` script in managing repos
+> has decreased. Especially during development, you may just want to manually manipulate your git repos.
+
+If you have access to hoover and want to use it in your deployment:
+```bash
+cd /gae/emap-instance-name
+git clone https://github.com/SAFEHR-data/hoover
+```
+
+A GAE instance would typically be deployed from main or another well-known branch.
+Make sure the branches are set correctly in the global config file, and run:
+`emap setup --update`
+Git repos will be checked out accordingly, and the config files will be updated.
+
+Or you can override the configured branches with `emap setup --update --branch my_feature_branch`
+
+The `--init` option to the above command is not recommended as it can overwrite existing data.
+
+<details>
+    <summary> This should result in the following directory structure</summary>
+
+```bash
+$ tree -L 2
+.
+.
+├── config
+│     ├── ...
+├── emap
+│     ├── README.md
+│     ├── core
+│     ├── docs
+│     ├── emap-checker.xml
+│     ├── emap-interchange
+│     ├── emap-setup
+│     ├── emap-star
+│     ├── global-config-envs.EXAMPLE
+│     ├── glowroot-config-envs.EXAMPLE
+│     └── hl7-reader
+├── global-configuration.yaml
+├── hoover
+      ├── ...
+```
+
 </details>
 
-3. <details>
-    <summary>Install <b>emap-setup</b></summary>
-   
-    See the [emap-setup README](../../emap-setup/README.md) for details
+### Day-to-day Emap instance tasks
 
-</details>
+#### Switching emap instances
+```bash
+cd /gae/emap-instance-name
+source .venv/bin/activate  # or the equivalent for your virtual environment manager
+```
 
+#### Changing config
+> [!IMPORTANT]
+> Config options may be added or removed from the global configuration file as new versions of Emap are released.
+> It's recommended to perform a diff against the template file periodically and especially after updating
+> to a new version of Emap, to see if you need to add/remove any options from the actual config file.
+> ```bash
+> vimdiff global-configuration.yaml emap/emap-setup/global-configuration-EXAMPLE.yaml
+> ```
+> Take great care not to edit the EXAMPLE file by mistake, as the config file will contain secrets.
 
-4. <details>
-    <summary>Modify configuration</summary>
-   
-    Modify `global-configuration.yaml` with any passwords, usernames and URLs that need to be changed for a live version.
-    these will propagate into the individual `xxx-config-envs` configuration files, which in turn are used 
-    by the`application.properties`.
-    
-    - For example, make sure `UDS_SCHEMA` is set to what it needs to be, in this example `live` is used. If you're writing to the UDS, use the `emap_core` user (password in lastpass).
-    - If you're running locally, you can set `EMAP_PROJECT_NAME` to whatever you like. If running on the GAE it should be the same as the current directory (i.e. `emap-test` if in `/gae/emap-test`)
-    - All passwords should be strong to help prevent a user/malware outside the GAE from accessing the queue.
-    
-</details>
+```bash
+vim global-configuration.yaml 
+# [..make edits...]
 
-5. <details>
-    <summary>Clone the repositories</summary>
+# updates the files in config/ from the global config file
+emap setup -g
+```
 
-    Repositories must be checked out to the correct branches. "Correct" will depend on what you're trying to do.
-    Conventionally a live instance would all be deployed from main/master, but during the development phase `develop`
-    or a feature branch is more likely to be the correct. Clone all the master branches with:
+#### Bringing up an instance
+```bash
+emap docker up -d
+```
 
-    ```bash
-    emap setup --init --branch master
-    ```
+#### Check the status of an instance
+```bash
+emap docker ps
+```
 
-    This will result in the following directory structure
-
-    ```bash
-    $ tree -L 2
-    .
-    .
-    ├── config
-    │     ├── ...
-    ├── emap
-    │     ├── README.md
-    │     ├── core
-    │     ├── docs
-    │     ├── emap-checker.xml
-    │     ├── emap-interchange
-    │     ├── emap-setup
-    │     ├── emap-star
-    │     ├── global-config-envs.EXAMPLE
-    │     ├── glowroot-config-envs.EXAMPLE
-    │     └── hl7-reader
-    ├── global-configuration.yaml
-    ├── hoover
-          ├── ...
-   ```
-
-</details>
-
-6. <details>
-    <summary>Creating an instance</summary>
-   
-    ```bash
-    emap docker up -d
-    ```
-
-    Check the status with 
-    ```bash
-    emap docker ps
-    ```
-   
-    For example, this may give
-    ```
-    $ emap docker ps
-    Name                    Command                State                                               Ports                                           
-    ---------------------------------------------------------------------------------------------------------------------------------------------------------
-    jes1_core_1         /usr/local/bin/mvn-entrypo ...   Up                                                                                                   
-    jes1_fakeuds_1      docker-entrypoint.sh postgres    Up         0.0.0.0:5433->5432/tcp                                                                    
-    jes1_hl7-reader_1   /usr/local/bin/mvn-entrypo ...   Up                                                                                                   
-    jes1_rabbitmq_1     docker-entrypoint.sh rabbi ...   Up         15671/tcp, 0.0.0.0:15972->15672/tcp, 25672/tcp, 4369/tcp, 5671/tcp, 0.0.0.0:5972->5672/tcp
-    ```
-   
-</details>
-
+For example, this may give
+```
+$ emap docker ps
+Name                    Command                State                                               Ports                                           
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+jes1_core_1         /usr/local/bin/mvn-entrypo ...   Up                                                                                                   
+jes1_fakeuds_1      docker-entrypoint.sh postgres    Up         0.0.0.0:5433->5432/tcp                                                                    
+jes1_hl7-reader_1   /usr/local/bin/mvn-entrypo ...   Up                                                                                                   
+jes1_rabbitmq_1     docker-entrypoint.sh rabbi ...   Up         15671/tcp, 0.0.0.0:15972->15672/tcp, 25672/tcp, 4369/tcp, 5671/tcp, 0.0.0.0:5972->5672/tcp
+```
 
 ## Miscellaneous
 
