@@ -21,15 +21,21 @@ The [`emap` script](../../emap-setup) is used to manage the multiple repositorie
 
 ### Per-person one-off tasks
 
-Create a [personal access token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) 
-for the next step and allow your username and access token to be saved with
+The `emap` repo is public and doesn't need a github login, but if you want to fetch from hoover or other repos you
+need to [create a personal access token (PAT)](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) .
+
+Give it the most limited scope possible: read-only and hoover (and/or other repos) access only, because
+for your convenience we are going to allow your username and access token to be saved in plain text in your home directory:
 
 ```shell
 git config --global credential.helper store
 ```
 
-**Note**: this will allow storage of the connection information in plain text in your home directory. We use https 
-as a default but SSH is also possible.
+> [!CAUTION]
+> This config option will store any git credentials you type in plaintext in your home directory.
+> Never type your github username and password into the GAE (I think github no longer supports that anyway).
+> Use PATs as above.
+> Check out your platform-specific options (eg. Keychain) here: https://git-scm.com/doc/credential-helpers
 
 ### Per-machine tasks
 
@@ -58,7 +64,7 @@ cd /gae/emap-instance-name
 git clone https://github.com/SAFEHR-data/emap
 ```
 
-[!IMPORTANT]
+> [!IMPORTANT]
 > On the GAE you must avoid pushing to the remote, as an extra layer of defence against leaking secrets.
 > ```
 > cd /gae/emap-instance-name/emap
