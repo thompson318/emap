@@ -14,6 +14,9 @@ How to deploy an instance of Emap on
 - your own machine; or
 - the UCLH GAE, with access to real patient data.
 
+These instructions use `/gae/emap-instance-name` as an example of the Emap instance root.
+If you're not on the GAE you can choose your own path.
+
 The [`emap` script](../../emap-setup) is used to manage the multiple repositories and configuration files.
 
 ### Per-person one-off tasks
@@ -36,58 +39,53 @@ and follow instructions on setting up `uv`.
 For any other machine, it's also recommended to use `uv`, but you could instead use conda or venv.
 
 ### Per-Emap instance setup tasks
-
-#### Create a directory with the correct permissions
-> [!IMPORTANT]
-> GAE only.
-
 > [!NOTE]
 > If the Emap instance already exists, see instead [how to switch between Emap instances](#switching-emap-instances)
 
+#### Create a directory with the correct permissions (GAE only)
+(If not on GAE just create an empty dir in the normal way)
+
 See [main instructions for creating a directory that will inherit permissions correctly](https://uclh.slab.com/posts/shared-virtual-python-environments-with-uv-u7pa2fv4#hizbb-per-project-setup-tasks)
 
-You need to run the function defined in that doc as shown below:
+You need to run the `create_shared_dir` function defined in that doc as shown below:
 
 `create_shared_dir /gae/emap-instance-name`
 
-<details>
-    <summary>What should the file contents look like? (example)</summary>
-    
-    ```bash
-    $ ls -la /gae/emap-live
-    total 20
-    drwxrws---+  8 tomyoung docker 4096 Jan 16 09:27 .
-    drwxrwx---. 11 root     docker  179 Jan 13 16:26 ..
-    drwxrws---+  2 tomyoung docker  173 Feb 10  2022 config
-    drwxrws---+  8 tomyoung docker 4096 Jan 13 11:15 emap
-    -rwxrwx---.  1 tomyoung docker 2638 Jan 13 11:05 global-configuration.yaml
-    drwxrws---+  8 tomyoung docker 4096 Jan 13 11:08 hoover
-    ```
-
-    If files already exist in the top-level directory, you might want to 
-    remove the `S` from the group permissions of each file, e.g. `chmod g-s global.configuration.yaml`
-   
-</details>
-
 #### Clone this repo
-
-Clone the repo and prevent any pushing to the remote. This is an extra layer of defence against leaking secrets.
+Clone this repo
 ```bash
 cd /gae/emap-instance-name
 git clone https://github.com/SAFEHR-data/emap
-cd emap
-git remote set-url --push origin no_push.example.com
 ```
 
-Verify that this has worked:
-```
-$ git remote -vv
-origin  https://github.com/SAFEHR-data/emap (fetch)
-origin  no_push.example.com (push)
-```
+[!IMPORTANT]
+> On the GAE you must avoid pushing to the remote, as an extra layer of defence against leaking secrets.
+> ```
+> cd /gae/emap-instance-name/emap
+> git remote set-url --push origin no_push.example.com
+> ```
+> Verify that this has worked:
+> ```
+> $ git remote -vv
+> origin  https://github.com/SAFEHR-data/emap (fetch)
+> origin  no_push.example.com (push)
+> ```
 
 #### Install <b>emap-setup</b>
-See the [emap-setup README](../../emap-setup/README.md) for install instructions
+
+On the GAE you must use `uv`:
+```shell
+cd /gae/emap-instance-name  # eg /gae/emap-dev
+uv venv --python 3.11 .venv-emap-instance-name   # venv name will go in the prompt so good to name it clearly
+source .venv/bin/activate
+
+# install setup script in editable mode
+cd emap/emap-setup
+uv pip install -e . -r requirements.txt
+```
+
+On other computers you should probably also use `uv`, but see the [emap-setup README](../../emap-setup/README.md)
+for instructions for other virtual env managers.
 
 #### Modify configuration
 Modify `global-configuration.yaml`, adding passwords, usernames and URLs for your setup.
@@ -125,6 +123,20 @@ The `--init` option to the above command is not recommended as it can overwrite 
 
 <details>
     <summary> This should result in the following directory structure</summary>
+
+```bash
+$ ls -la /gae/emap-instance-name
+total 20
+drwxrws---+  8 tomyoung docker 4096 Jan 16 09:27 .
+drwxrwx---. 11 root     docker  179 Jan 13 16:26 ..
+drwxrws---+  2 tomyoung docker  173 Feb 10  2022 config
+drwxrws---+  8 tomyoung docker 4096 Jan 13 11:15 emap
+-rwxrwx---.  1 tomyoung docker 2638 Jan 13 11:05 global-configuration.yaml
+drwxrws---+  8 tomyoung docker 4096 Jan 13 11:08 hoover
+```
+
+If files already exist in the top-level directory, you might want to 
+remove the `S` from the group permissions of each file, e.g. `chmod g-s global.configuration.yaml`
 
 ```bash
 $ tree -L 2
