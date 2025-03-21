@@ -26,14 +26,25 @@ Give it the most limited scope possible: read-only and hoover (and/or other repo
 for your convenience we are going to allow your username and access token to be saved in plain text in your home directory:
 
 ```shell
-git config --global credential.helper store
+git config --global credential.https://github.com.helper store
 ```
 
 > [!CAUTION]
 > This config option will store any git credentials you type in plaintext in your home directory.
 > Never type your github username and password into the GAE (I think github no longer supports that anyway).
 > Use PATs as above.
+> 
 > Check out your platform-specific options (eg. Keychain) here: https://git-scm.com/doc/credential-helpers
+> 
+> If you are particularly concerned about storing the PAT on disk you can instead use:
+> 
+> `git config --global credential.https://github.com.helper "cache --timeout=3600"`
+> 
+> To store the PAT temporarily in memory.
+
+
+You can also set your github username with:
+`git config --global credential.https://github.com.username YOUR_GITHUB_USERNAME`
 
 ## Per-machine tasks
 
@@ -81,7 +92,7 @@ On the GAE you must use `uv`:
 ```shell
 cd /gae/emap-instance-name  # eg /gae/emap-dev
 uv venv --python 3.11 .venv-emap-instance-name   # venv name will go in the prompt so good to name it clearly
-source .venv/bin/activate
+source .venv-emap-instance-name/bin/activate
 
 # install setup script in editable mode
 cd emap/emap-setup
@@ -92,7 +103,11 @@ On other computers you should probably also use `uv`, but see the [emap-setup RE
 for instructions for other virtual env managers.
 
 ### Modify configuration
-Modify `global-configuration.yaml`, adding passwords, usernames and URLs for your setup.
+The first time you must copy the `global-configuration.yaml` file from the template file:
+
+`cp emap/emap-setup/global-configuration-EXAMPLE.yaml global-configuration.yaml`
+
+Now modify `global-configuration.yaml`, adding passwords, usernames and URLs for your setup.
 
 Then run `emap setup -g` to propagate the config into the individual `config/xxx-config-envs` configuration files.
 
@@ -166,12 +181,20 @@ $ tree -L 2
 
 </details>
 
+### Actually bring it up!
+```bash
+cd /gae/emap-instance-name
+emap docker build
+emap docker up -d
+```
+
+
 ## Day-to-day Emap instance tasks
 
 ### Switching emap instances
 ```bash
 cd /gae/emap-instance-name
-source .venv/bin/activate  # or the equivalent for your virtual environment manager
+source .venv-emap-instance-name/bin/activate  # or the equivalent for your virtual environment manager
 ```
 
 ### Changing config
