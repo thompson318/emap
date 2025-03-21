@@ -1,25 +1,23 @@
-# Emap Core Processor (`core`)
-
-This service takes messages from a queue and compares this data to the current data in the EMAP database.
-Generally, if a message has newer information that is different, then the message will update the database data,
-otherwise the message will have no effect. This is important because the HL7 messages can be received out of order.
-
-## IntelliJ setup
-
-See [here for IntelliJ setup](intellij.md)
-
-## Deploying an Emap instance
+# Deploying an Emap instance
 
 How to deploy an instance of Emap on
 - your own machine; or
 - the UCLH GAE, with access to real patient data.
 
+To be read by Emap developers or deployers.
+
 These instructions use `/gae/emap-instance-name` as an example of the Emap instance root.
-If you're not on the GAE you can choose your own path.
+If you're not on the GAE you can create your own empty directory.
 
-The [`emap` script](../../emap-setup) is used to manage the multiple repositories and configuration files.
+The [emap script](../../emap-setup) from the emap-setup module is used to manage the
+multiple repositories and configuration files.
 
-### Per-person one-off tasks
+> [!TIP]
+> You can deploy on docker containers on your dev machine
+> straight from your dev source tree(s).
+> See [here for IntelliJ setup](intellij.md)
+
+## Per-person one-off tasks
 
 The `emap` repo is public and doesn't need a github login, but if you want to fetch from hoover or other repos you
 need to [create a personal access token (PAT)](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) .
@@ -37,18 +35,18 @@ git config --global credential.helper store
 > Use PATs as above.
 > Check out your platform-specific options (eg. Keychain) here: https://git-scm.com/doc/credential-helpers
 
-### Per-machine tasks
+## Per-machine tasks
 
 For the GAE, see [GAE shared env doc](https://uclh.slab.com/posts/shared-virtual-python-environments-with-uv-u7pa2fv4#hpkxd-per-gae-setup-tasks)
 and follow instructions on setting up `uv`.
 
 For any other machine, it's also recommended to use `uv`, but you could instead use conda or venv.
 
-### Per-Emap instance setup tasks
+## Per-Emap instance setup tasks
 > [!NOTE]
 > If the Emap instance already exists, see instead [how to switch between Emap instances](#switching-emap-instances)
 
-#### Create a directory with the correct permissions (GAE only)
+### Create a directory with the correct permissions (GAE only)
 (If not on GAE just create an empty dir in the normal way)
 
 See [main instructions for creating a directory that will inherit permissions correctly](https://uclh.slab.com/posts/shared-virtual-python-environments-with-uv-u7pa2fv4#hizbb-per-project-setup-tasks)
@@ -57,7 +55,7 @@ You need to run the `create_shared_dir` function defined in that doc as shown be
 
 `create_shared_dir /gae/emap-instance-name`
 
-#### Clone this repo
+### Clone this repo
 Clone this repo
 ```bash
 cd /gae/emap-instance-name
@@ -77,7 +75,7 @@ git clone https://github.com/SAFEHR-data/emap
 > origin  no_push.example.com (push)
 > ```
 
-#### Install <b>emap-setup</b>
+### Install <b>emap-setup</b>
 
 On the GAE you must use `uv`:
 ```shell
@@ -93,7 +91,7 @@ uv pip install -e . -r requirements.txt
 On other computers you should probably also use `uv`, but see the [emap-setup README](../../emap-setup/README.md)
 for instructions for other virtual env managers.
 
-#### Modify configuration
+### Modify configuration
 Modify `global-configuration.yaml`, adding passwords, usernames and URLs for your setup.
 
 Then run `emap setup -g` to propagate the config into the individual `config/xxx-config-envs` configuration files.
@@ -106,10 +104,10 @@ Config tips:
 - All passwords must be strong. Remember that Emap needs to expose certain ports outside the GAE to operate.
 - All config must stay local and not be committed to git.
 
-#### Clone the other repositories
+### Clone the other repositories
 
-> [!INFO]
-> Historical note: Since moving to the monorepo, the importance of the `emap` script in managing repos
+> [!NOTE]
+> Since moving to the monorepo, the importance of the `emap` script in managing repos
 > has decreased. Especially during development, you may just want to manually manipulate your git repos.
 
 If you have access to hoover and want to use it in your deployment:
@@ -168,15 +166,15 @@ $ tree -L 2
 
 </details>
 
-### Day-to-day Emap instance tasks
+## Day-to-day Emap instance tasks
 
-#### Switching emap instances
+### Switching emap instances
 ```bash
 cd /gae/emap-instance-name
 source .venv/bin/activate  # or the equivalent for your virtual environment manager
 ```
 
-#### Changing config
+### Changing config
 > [!IMPORTANT]
 > Config options may be added or removed from the global configuration file as new versions of Emap are released.
 > It's recommended to perform a diff against the template file periodically and especially after updating
@@ -194,12 +192,12 @@ vim global-configuration.yaml
 emap setup -g
 ```
 
-#### Bringing up an instance
+### Bringing up an instance
 ```bash
 emap docker up -d
 ```
 
-#### Check the status of an instance
+### Check the status of an instance
 ```bash
 emap docker ps
 ```
@@ -215,7 +213,7 @@ jes1_hl7-reader_1   /usr/local/bin/mvn-entrypo ...   Up
 jes1_rabbitmq_1     docker-entrypoint.sh rabbi ...   Up         15671/tcp, 0.0.0.0:15972->15672/tcp, 25672/tcp, 4369/tcp, 5671/tcp, 0.0.0.0:5972->5672/tcp
 ```
 
-## Miscellaneous
+# Miscellaneous
 
 Ports which are allocated per project are listed on the [GAE port log](https://liveuclac.sharepoint.com/sites/RITS-EMAP/_layouts/OneNote.aspx?id=%2Fsites%2FRITS-EMAP%2FSiteAssets%2FInform%20-%20Emap%20Notebook&wd=target%28_Collaboration%20Space%2FOrganisation%20Notes.one%7C3BDBA82E-CB01-45FF-B073-479542EA6D7E%2FGAE%20Port%20Log%7C1C87DFDC-7FCF-4B63-BC51-2BA497BA8DBF%2F%29)
 
