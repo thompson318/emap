@@ -40,7 +40,7 @@ git config --global credential.https://github.com.helper store
 > 
 > `git config --global credential.https://github.com.helper "cache --timeout=3600"`
 > 
-> To store the PAT temporarily in memory.
+> To store the PAT temporarily in memory. Or do none of the above and paste it in every time.
 
 
 You can also set your github username with:
@@ -130,6 +130,10 @@ If you have access to hoover and want to use it in your deployment:
 cd /gae/emap-instance-name
 git clone https://github.com/SAFEHR-data/hoover
 ```
+
+> [!IMPORTANT]
+> See [earlier cloning instructions](#clone-this-repo) and do the same trick to avoid pushing to this repo.
+> ( `git remote set-url --push origin no_push.example.com` )
 
 A GAE instance would typically be deployed from main or another well-known branch.
 Make sure the branches are set correctly in the global config file, and run:
