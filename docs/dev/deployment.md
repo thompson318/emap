@@ -31,20 +31,23 @@ git config --global credential.https://github.com.helper store
 
 > [!CAUTION]
 > This config option will store any git credentials you type in plaintext in your home directory.
-> Never type your github username and password into the GAE (I think github no longer supports that anyway).
+> Never type your github password into the GAE
+> ([github no longer supports that anyway](https://github.blog/changelog/2021-08-12-git-password-authentication-is-shutting-down/)).
 > Use PATs as above.
 > 
-> Check out your platform-specific options (eg. Keychain) here: https://git-scm.com/doc/credential-helpers
+> Investigate platform-specific options (eg. Keychain on macOS) here: https://git-scm.com/doc/credential-helpers
 > 
-> If you are particularly concerned about storing the PAT on disk you can instead use:
+> If you are particularly concerned about storing the PAT on disk you can instead use the following
+> command to store the PAT temporarily in memory:
 > 
 > `git config --global credential.https://github.com.helper "cache --timeout=3600"`
 > 
-> To store the PAT temporarily in memory. Or do none of the above and paste it in every time.
+> Or do none of the above and paste it in every time.
 
 
-You can also set your github username with:
+You can safely set your github username with:
 `git config --global credential.https://github.com.username YOUR_GITHUB_USERNAME`
+so that you won't have to type it every time.
 
 ## Per-machine tasks
 
@@ -71,6 +74,7 @@ Clone this repo
 ```bash
 cd /gae/emap-instance-name
 git clone https://github.com/SAFEHR-data/emap
+# optional: check out the branch that you wish to use if not main
 ```
 
 > [!IMPORTANT]
