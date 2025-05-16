@@ -87,6 +87,9 @@ abstract class LabOrderBuilder {
      */
     void populateOrderInformation(ORC orc, OBR obr) throws DataTypeException, Hl7InconsistencyException {
         // NA/NW/CA/CR/OC/XO
+        if (orc.getOrc1_OrderControl().getValue() == null) {
+            throw new Hl7InconsistencyException("ORC 1 Order Control value is null");
+        }
         msg.setOrderControlId(orc.getOrc1_OrderControl().getValue());
         epicCareOrderNumberOrc = orc.getOrc2_PlacerOrderNumber().getEi1_EntityIdentifier().getValueOrEmpty();
         setLabSpecimenNumber(orc);
