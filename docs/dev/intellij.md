@@ -24,8 +24,8 @@ These setup instructions are aimed at developing in [IntelliJ IDEA](https://www.
 
     ```bash
     cd ~/projects/EMAP
-    git clone https://github.com/UCLH-DHCT/emap.git
-    git clone https://github.com/inform-health-informatics/hoover.git
+    git clone https://github.com/SAFEHR-data/emap.git
+    git clone https://github.com/SAFEHR-data/hoover.git
     ```
 
 </details>
