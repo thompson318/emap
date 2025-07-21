@@ -230,9 +230,9 @@ required before changes should impact the running codebase.
 If this is an entirely new data type with no effect on existing data, then feature flags can be used to disable the
 processing of the messages in production.
 For a change to an existing data type or to release into production, then follow
-the [validation SOP](https://github.com/UCLH-DHCT/internal_emap_documentation/blob/main/SOP/validation_run.md).
+the [validation SOP](https://github.com/SAFEHR-data/internal_emap_documentation/blob/main/SOP/validation_run.md).
 
 ### Deployment
 
 Deployment is carried out using the emap-setup tool, follow
-the [release procedure SOP](https://github.com/UCLH-DHCT/internal_emap_documentation/blob/main/SOP/release_procedure.md)
+the [release procedure SOP](https://github.com/SAFEHR-data/internal_emap_documentation/blob/main/SOP/release_procedure.md).
