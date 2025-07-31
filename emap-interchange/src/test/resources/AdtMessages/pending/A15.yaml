@@ -54,4 +54,7 @@ modeOfArrival:
   "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
   status: "SAVE"
   value: "Walk-in"
-
+hospitalService:
+  "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
+  status: "SAVE"
+  value: "Head and Neck - OMFS"

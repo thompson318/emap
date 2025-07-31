@@ -96,6 +96,7 @@ class TestPendingAdt extends MessageProcessingBase {
         assertEquals(EVENT_TIME, plannedMovement.getEventDatetime());
         assertEquals(PendingType.TRANSFER.toString(), plannedMovement.getEventType());
         assertNull(plannedMovement.getCancelledDatetime());
+        assertEquals("Head and Neck - OMFS", plannedMovement.getHospitalService());
     }
 
     /**
