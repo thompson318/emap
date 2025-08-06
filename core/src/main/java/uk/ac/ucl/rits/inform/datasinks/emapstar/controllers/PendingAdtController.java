@@ -162,7 +162,7 @@ public class PendingAdtController {
     }
 
     /**
-     * Add hospital service
+     * Add hospital service.
      * @param msg           PendingTransfer
      * @param movementState movement wrapped in state class
      */
