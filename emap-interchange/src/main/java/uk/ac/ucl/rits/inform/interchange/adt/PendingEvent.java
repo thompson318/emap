@@ -28,4 +28,9 @@ public interface PendingEvent {
      */
     InterchangeValue<String> getHospitalService();
 
+    /**
+     * @param hospitalService
+     */
+    void  setHospitalService(InterchangeValue<String> hospitalService);
+
 }
