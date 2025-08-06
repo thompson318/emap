@@ -1,6 +1,7 @@
 package uk.ac.ucl.rits.inform.datasources.ids.hl7.parser;
 
 import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.model.DataTypeException;
 import ca.uhn.hl7v2.model.v26.datatype.PL;
 import ca.uhn.hl7v2.model.v26.segment.PV1;
 import uk.ac.ucl.rits.inform.datasources.ids.Doctor;
@@ -125,6 +126,15 @@ public interface PV1Wrap {
      */
     default String getHospitalService() throws HL7Exception {
         return getPV1().getHospitalService().getValue();
+    }
+
+    /**
+     * PV1-11: First element of the Temporary location.
+     * @return the first component of the temporary location string
+     */
+    default String getTemporaryLocation() throws DataTypeException {
+        PL temporaryLocation = getPV1().getTemporaryLocation();
+        return (String.valueOf(temporaryLocation.getComponent(0)));
     }
 
     /**
