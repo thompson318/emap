@@ -1,7 +1,6 @@
 package uk.ac.ucl.rits.inform.datasources.ids.hl7.parser;
 
 import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.model.DataTypeException;
 import ca.uhn.hl7v2.model.v26.datatype.PL;
 import ca.uhn.hl7v2.model.v26.segment.PV1;
 import uk.ac.ucl.rits.inform.datasources.ids.Doctor;
