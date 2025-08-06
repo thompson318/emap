@@ -129,10 +129,10 @@ public interface PV1Wrap {
     }
 
     /**
-     * PV1-11: First element of the Temporary location.
-     * @return the first component of the temporary location string
+     * @return PV1-11: First element of the Temporary location.
+     * @throws HL7Exception if HAPI does
      */
-    default String getTemporaryLocation() throws DataTypeException {
+    default String getTemporaryLocation() throws HL7Exception {
         PL temporaryLocation = getPV1().getTemporaryLocation();
         return (String.valueOf(temporaryLocation.getComponent(0)));
     }
