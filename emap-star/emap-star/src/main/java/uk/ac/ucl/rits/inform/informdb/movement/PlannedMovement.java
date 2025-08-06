@@ -86,8 +86,8 @@ public class PlannedMovement extends TemporalCore<PlannedMovement, PlannedMoveme
 
     /**
      * \brief The hospital service associated with this planned movement.
-     * 
-     * Also know as the subspeciality. 
+     *
+     * Also known as the subspeciality.
      */
     private String hospitalService;
 

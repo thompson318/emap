@@ -24,7 +24,7 @@ public interface PendingEvent {
 
 
     /**
-     * @return Hospital service from PV1-10. 
+     * @return Hospital service from PV1-10.
      */
     InterchangeValue<String> getHospitalService();
 
