@@ -79,6 +79,17 @@ public interface PV1Wrap {
     }
 
     /**
+     * PV1-4: Admission type
+     * @return the admission type string
+     */
+    default String getAdmissionType() {
+        if (!pv1SegmentExists()) {
+            return null;
+        }
+        return getAdmissionType();
+    }
+
+    /**
      * PV1-6: Previous patient location concatenated together.
      * @return the previous location string
      */
