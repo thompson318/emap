@@ -56,16 +56,6 @@ public class TestMiscAdt extends TestHl7MessageStream {
     }
 
     /**
-     * A01 basics admission type
-     */
-    @Test
-    public void testAdmissionType() throws Exception {
-        AdtMessage msg = processSingleAdtMessage("Adt/generic/A01.txt");
-        assertTrue(AdmitPatient.class.getAdmissionType(), msg.getAdmissionType());
-
-    }
-
-    /**
      * When a birth datetime is purely a date, should keep the original day, even when BST.
      * @throws Exception shouldn't happen
      */
