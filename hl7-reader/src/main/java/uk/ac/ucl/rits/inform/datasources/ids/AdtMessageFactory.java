@@ -451,7 +451,7 @@ public class AdtMessageFactory {
     }
 
     private void setHospitalService(PV1Wrap pv1Wrap, PendingEvent pendingEvent) throws HL7Exception {
-        String hospitalService = pv1Wrap.getTemporaryLocation();  // this seems wrong - check
+        String hospitalService = pv1Wrap.getHospitalService();
         pendingEvent.setHospitalService(InterchangeValue.buildFromHl7(hospitalService));
     }
 }
