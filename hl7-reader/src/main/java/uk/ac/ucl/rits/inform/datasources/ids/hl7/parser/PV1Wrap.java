@@ -79,7 +79,7 @@ public interface PV1Wrap {
     }
 
     /**
-     * PV1-4: Admission type
+     * PV1-4: Admission type.
      * @return the admission type string
      */
     default String getAdmissionType() {
