@@ -86,7 +86,7 @@ public interface PV1Wrap {
         if (!pv1SegmentExists()) {
             return null;
         }
-        return getAdmissionType();
+        return getPV1().getAdmissionType().getValue();
     }
 
     /**
