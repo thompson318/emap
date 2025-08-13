@@ -128,15 +128,6 @@ public interface PV1Wrap {
     }
 
     /**
-     * @return PV1-11: First element of the Temporary location.
-     * @throws HL7Exception if HAPI does
-     */
-    default String getTemporaryLocation() throws HL7Exception {
-        PL temporaryLocation = getPV1().getTemporaryLocation();
-        return (String.valueOf(temporaryLocation.getComponent(0)));
-    }
-
-    /**
      * @return PV1-14 Admission Source. NB Carecast says ZLC8.1 Source of admission
      * @throws HL7Exception if HAPI does
      */
