@@ -172,8 +172,6 @@ public class PendingAdtController {
     }
 }
 
-
-
 /**
  * Interface to allow passing of the repository method as a parameter.
  * <p>
