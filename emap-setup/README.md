@@ -9,20 +9,26 @@ Code to initialise, update and run EMAP. Includes ability to:
 
 ## Usage: GAE
 
-`emap-setup` should be installed on each deployment of emap, this is created 
-from the directory for the EMAP deployment:
+There should be one installation of `emap-setup` for each deployment of emap, each installed inside a venv named
+`venv` at the top level of the source directory for the EMAP deployment.
 
+Initial creation of the venv:
 ```shell
-python -m venv venv --prompt "<prompt-name>"
+cd /gae/emap-deployment-name  # eg /gae/emap-dev
+python -m venv venv --prompt "emap-deployment-name"  # prompt so we can tell which venv we're in
+
+# install setup script in editable mode
+cd /gae/emap-deployment-name/emap/emap-setup
+pip install -e . -r requirements.txt
 ```
 
-This can then be activated by running
-
+For an existing deployment it should already exist, so just activate it:
 ```shell
+cd /gae/emap-deployment-name  # eg /gae/emap-dev
 source venv/bin/activate
 ```
 
-The required `global-configuration.yaml` files exist in schema specific folders
+The required `global-configuration.yaml` file exists in the top level directory:
 e.g. `/gae/emap-<schema name>`.
 
 ## Usage: Local
@@ -34,6 +40,15 @@ e.g. `/gae/emap-<schema name>`.
    and adjust for your own requirements
 
 For example, create and activate a virtual environment first with either:
+
+<details><summary>uv</summary>
+
+```bash
+cd EMAP
+uv venv --python 3.11
+source .venv/bin/activate
+```
+</details>
 
 <details><summary>Conda</summary>
 
@@ -55,8 +70,9 @@ source ~/.local/venvs/emap/bin/activate
 
 then clone and install 
 ```bash
-git clone https://github.com/UCLH-DHCT/emap
+git clone https://github.com/SAFEHR-data/emap
 cd emap-setup
+# (or uv pip install... if using uv)
 pip install -e . -r requirements.txt
 cp global-configuration-EXAMPLE.yaml ../../global-configuration.yaml
 ```

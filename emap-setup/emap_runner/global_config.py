@@ -1,3 +1,5 @@
+import re
+
 import yaml
 
 from typing import Optional
@@ -19,6 +21,9 @@ class GlobalConfiguration(dict):
         "global",
         "glowroot",
         "common",
+        "fake_uds",
+        "waveform",
+        "monitoring",
     )
 
     def __init__(self, filepath: Path):
@@ -122,14 +127,21 @@ class GlobalConfiguration(dict):
 
         for i, line in enumerate(env_file.lines):
 
-            if line.startswith("#"):
+            if re.match(r"\s*#", line):
                 env_file.set_comment_line_at(line, idx=i)
+                continue
+
+            if re.match(r"\s*$", line):
                 continue
 
             key, value = line.split("=")  # e.g. IDS_SCHEMA=schemaname
 
             try:
                 value = self.get_first(key, env_file.basename)
+                if value is None:
+                    # Don't stringify None, Spring won't understand.
+                    # Empty string is the closest alternative.
+                    value = ""
                 env_file.set_new_line_at(f"{key}={value}\n", idx=i)
 
             except KeyError:
@@ -138,8 +150,12 @@ class GlobalConfiguration(dict):
         return None
 
     def get_first(self, key: str, section: str) -> str:
-        """Get the first value of a key within a section of this global
-        configuration. If it cannot be found then use the top-level"""
+        """
+        Search the config for the given key in the following order:
+         - In the section given by arg `section`
+         - In any of the sections in possible_sections
+         - At the top level
+         """
 
         if section in self and key in self[section]:
             """
