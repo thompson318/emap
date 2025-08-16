@@ -1,0 +1,4 @@
+# Every notebook in this folder should be paired with the Python percent format
+
+formats = "ipynb,py:percent"
+notebook_metadata_filter = "-jupytext.text_representation.jupytext_version,-kernelspec"
