@@ -75,6 +75,7 @@ public class PendingAdtController {
         RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
                 allFromRequest, visit, plannedLocation, msg.getPendingEventType().toString(), msg.getEventOccurredDateTime(), validFrom, storedFrom
         );
+        addHospitalService(msg, plannedState);
         PlannedMovement plannedMovement = plannedState.getEntity();
         // If we receive a cancelled message before the original request then add it in
         if (plannedMovement.getEventDatetime() == null) {
@@ -158,6 +159,16 @@ public class PendingAdtController {
     private void deletePlannedMovement(PlannedMovement plannedMovement, Instant deletionTime, Instant storedUntil) {
         plannedMovementAuditRepo.save(plannedMovement.createAuditEntity(deletionTime, storedUntil));
         plannedMovementRepo.delete(plannedMovement);
+    }
+
+    /**
+     * Add hospital service.
+     * @param msg           PendingTransfer
+     * @param movementState movement wrapped in state class
+     */
+    private void addHospitalService(final PendingTransfer msg, RowState<PlannedMovement, PlannedMovementAudit> movementState) {
+        PlannedMovement movement = movementState.getEntity();
+        movementState.assignInterchangeValue(msg.getHospitalService(), movement.getHospitalService(), movement::setHospitalService);
     }
 }
 
