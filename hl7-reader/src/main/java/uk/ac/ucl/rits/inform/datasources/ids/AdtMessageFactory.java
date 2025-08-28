@@ -252,6 +252,7 @@ public class AdtMessageFactory {
             case "A15":
                 PendingTransfer pendingTransfer = new PendingTransfer();
                 setPendingDestination(pv1Wrap, pendingTransfer);
+                setHospitalService(pv1Wrap, pendingTransfer);
                 msg = pendingTransfer;
                 break;
             case "A17":
@@ -448,5 +449,10 @@ public class AdtMessageFactory {
     private void setPendingDestination(PV1Wrap pv1Wrap, PendingEvent pendingEvent) {
         String pendingLocation = pv1Wrap.getPendingLocation();
         pendingEvent.setPendingDestination(InterchangeValue.buildFromHl7(pendingLocation));
+    }
+
+    private void setHospitalService(PV1Wrap pv1Wrap, PendingEvent pendingEvent) throws HL7Exception {
+        String hospitalService = pv1Wrap.getHospitalService();
+        pendingEvent.setHospitalService(InterchangeValue.buildFromHl7(hospitalService));
     }
 }
