@@ -29,9 +29,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @Table(indexes = {
-        @Index(name = "pm_location", columnList = "locationId"),
-        @Index(name = "pm_hospital_visit", columnList = "hospitalVisitId"),
-        @Index(name = "pm_note_type", columnList = "noteType"),
+        @Index(name = "nm_hospital_visit", columnList = "hospitalVisitId"),
+        @Index(name = "nm_started_datetime", columnList = "startedDatetime"),
 })
 @AuditTable
 public class NotesMetadata extends TemporalCore<NotesMetadata, NotesMetadataAudit> {

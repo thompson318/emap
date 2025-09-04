@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import uk.ac.ucl.rits.inform.informdb.notes.NotesMetadata;
 //import java.time.Instant;
-//import java.util.List;
+import java.util.List;
 //import java.util.Optional;
 
 /**
@@ -74,11 +74,11 @@ public interface NotesMetadataRepository extends CrudRepository<NotesMetadata, L
 //      */
 //     Optional<NotesMetadata> findByHospitalVisitIdEncounterAndLocationIdLocationString(String encounter, String locationString);
 
-//     /**
-//      * For testing.
-//      * @param encounter encounter string
-//      * @return list of planned movements
-//      */
-//     List<NotesMetadata> findAllByHospitalVisitIdEncounter(String encounter);
+    /**
+     * For testing.
+     * @param encounter encounter string
+     * @return list of planned movements
+     */
+    List<NotesMetadata> findAllByHospitalVisitIdEncounter(String encounter);
 
 }
