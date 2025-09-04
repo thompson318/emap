@@ -1,4 +1,4 @@
-"@class": "uk.ac.ucl.rits.inform.interchange.adt.CancelPendingTransfer"
+"@class": "uk.ac.ucl.rits.inform.interchange.adt.CancelPendingDischarge"
 recordedDateTime: "2022-04-21T23:37:00Z"
 eventOccurredDateTime: "2022-04-21T23:37:58Z"
 eventReasonCode: "PNDTRANSFERDELETE"

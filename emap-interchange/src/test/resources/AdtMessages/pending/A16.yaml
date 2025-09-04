@@ -1,7 +1,7 @@
-"@class": "uk.ac.ucl.rits.inform.interchange.adt.PendingTransfer"
+"@class": "uk.ac.ucl.rits.inform.interchange.adt.PendingDischarge
 recordedDateTime: "2022-04-21T23:23:00Z"
 eventOccurredDateTime: "2022-04-21T23:22:58Z"
-eventReasonCode: "PNDTRANSFER"
+eventReasonCode: "PNDDISCHARGE"
 visitNumber: "123412341234"
 nhsNumber: "9999999999"
 sourceSystem: "EPIC"
