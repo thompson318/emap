@@ -1,19 +1,17 @@
 "@class": "uk.ac.ucl.rits.inform.interchange.adt.CancelPendingDischarge"
 recordedDateTime: "2022-04-21T23:37:00Z"
 eventOccurredDateTime: "2022-04-21T23:37:58Z"
-eventReasonCode: "PNDTRANSFERDELETE"
+eventReasonCode: "PNDDISCHARGEDELETE"
 visitNumber: "123412341234"
 nhsNumber: "9999999999"
 sourceSystem: "EPIC"
 mrn: "40800000"
+dischargeDisposition: "Feeling great"
+dischargeLocation: "Home"
 fullLocationString:
   "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
   status: "SAVE"
-  value: "1020100166^SDEC POST-TRIAGE WAITING AREA^POST-TRIAGE WAITING"
-pendingDestination:
-  "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
-  status: "SAVE"
-  value: "1020100166^SDEC BY02^11 SDEC"
+  value: "ED^COVID MAJORS 16^16-COVID MAJORS"
 patientBirthDate:
   "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
   status: "SAVE"
