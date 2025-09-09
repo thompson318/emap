@@ -17,7 +17,7 @@ import java.time.Instant;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class PendingDischarge extends AdtMessage implements PendingEvent{
+public class PendingDischarge extends AdtMessage implements PendingEvent {
     private PendingType pendingEventType = PendingType.DISCHARGE;
     private InterchangeValue<String> pendingDestination = InterchangeValue.unknown();
     private InterchangeValue<String> hospitalService = InterchangeValue.unknown();
