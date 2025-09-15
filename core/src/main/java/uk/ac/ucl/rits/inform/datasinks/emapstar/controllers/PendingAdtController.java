@@ -178,6 +178,35 @@ public class PendingAdtController {
     }
 
     /**
+     * Process pending ADT cancellation.
+     * <p>
+     * If multiple pending ADT events exist that aren't cancelled, will cancel the earliest one that occurs before the cancellation time.
+     * @param visit      associated visit
+     * @param msg        pending adt cancellation msg
+     * @param validFrom  time in the hospital when the message was created
+     * @param storedFrom time that emap core started processing the message
+     */
+    public void processMsg(HospitalVisit visit, CancelPendingDischarge msg, Instant validFrom, Instant storedFrom) {
+        Location plannedLocation = null;
+        if (msg.getPendingDestination().isSave()) {
+            plannedLocation = locationController.getOrCreateLocation(msg.getPendingDestination().get());
+        }
+
+        RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
+                allFromCancel, visit, plannedLocation, msg.getPendingEventType().toString(), msg.getCancelledDateTime(), validFrom, storedFrom
+        );
+        PlannedMovement plannedMovement = plannedState.getEntity();
+        // Cancel the message if it hasn't been cancelled already
+        if (plannedMovement.getCancelledDatetime() == null) {
+            plannedState.assignIfDifferent(msg.getCancelledDateTime(), plannedMovement.getCancelledDatetime(), plannedMovement::setCancelledDatetime);
+            plannedState.assignIfDifferent(true, plannedMovement.getCancelled(), plannedMovement::setCancelled);
+        }
+
+        plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
+    }
+
+
+    /**
      * Delete planned movements from a delete patient information message.
      * @param visit            Hospital visit that should have their planned movements deleted
      * @param invalidationTime Time of the delete information message
