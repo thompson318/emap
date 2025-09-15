@@ -122,6 +122,23 @@ class TestPendingAdt extends MessageProcessingBase {
 
     /**
      * Given no planned movements in the database
+     * When a pending transfer is processed
+     * Then a new PlannedMovement should be created
+     * @throws Exception shouldn't happen
+     */
+    @Test
+    void testPendingDischargeCreatesPlannedMovement() throws Exception {
+        dbOps.processMessage(pendingDischarge);
+
+        PlannedMovement plannedMovement = getPlannedMovementOrThrow(VISIT_NUMBER, "Home");
+        assertEquals(EVENT_TIME, plannedMovement.getEventDatetime());
+        assertEquals(PendingType.DISCHARGE.toString(), plannedMovement.getEventType());
+        assertNull(plannedMovement.getCancelledDatetime());
+        assertEquals("Feeling great", plannedMovement.getDischargeDisposition());
+    }
+
+    /**
+     * Given no planned movements in the database
      * When a pending cancel is processed
      * Then a new PlannedMovement should be created with an unknown event datetime
      * @throws Exception shouldn't happen
