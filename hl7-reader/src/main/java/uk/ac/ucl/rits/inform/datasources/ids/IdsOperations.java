@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ucl.rits.inform.datasources.ids.conditons.PatientAllergyFactory;
 import uk.ac.ucl.rits.inform.datasources.ids.conditons.PatientInfectionFactory;
 import uk.ac.ucl.rits.inform.datasources.ids.conditons.PatientProblemFactory;
+import uk.ac.ucl.rits.inform.datasources.ids.NotesMetadataFactory;
 import uk.ac.ucl.rits.inform.datasources.ids.exceptions.Hl7InconsistencyException;
 import uk.ac.ucl.rits.inform.datasources.ids.exceptions.Hl7MessageIgnoredException;
 import uk.ac.ucl.rits.inform.datasources.ids.exceptions.Hl7MessageNotImplementedException;
@@ -54,6 +55,7 @@ import java.util.concurrent.Semaphore;
  * @author Jeremy Stein
  * @author Stef Piatek
  * @author Anika Cawthorn
+ * @author Sarah Keating
  */
 @Component
 @EntityScan("uk.ac.ucl.rits.inform.datasources.ids")
@@ -67,6 +69,7 @@ public class IdsOperations implements AutoCloseable {
     private final PatientInfectionFactory patientInfectionFactory;
     private final PatientAllergyFactory patientAllergyFactory;
     private final PatientProblemFactory patientProblemFactory;
+    private final NotesMetadataFactory notesMetadataFactory;
     private final IdsProgressRepository idsProgressRepository;
     private final boolean idsEmptyOnInit;
     private final Integer defaultStartUnid;
@@ -79,6 +82,7 @@ public class IdsOperations implements AutoCloseable {
      * @param patientInfectionFactory  orchestrates processing of messages with patient status
      * @param patientProblemFactory orchestrates processing of messages with patient problems
      * @param patientAllergyFactory orchestrates processing of messages with patient allergies
+    * @param notesMetadataFactory orchestrates processing of messages with patient allergies
      * @param idsProgressRepository interaction with ids progress table (stored in the star database)
      */
     public IdsOperations(
@@ -88,12 +92,14 @@ public class IdsOperations implements AutoCloseable {
             PatientInfectionFactory patientInfectionFactory,
             PatientAllergyFactory patientAllergyFactory,
             PatientProblemFactory patientProblemFactory,
+            PatientAllergyFactory notesMetadataFactory,
             IdsProgressRepository idsProgressRepository) {
         this.patientInfectionFactory = patientInfectionFactory;
         this.patientAllergyFactory = patientAllergyFactory;
         this.adtMessageFactory = adtMessageFactory;
         this.orderAndResultService = orderAndResultService;
         this.patientProblemFactory = patientProblemFactory;
+        this.notesMetadataFactory = notesMetadataFactory;
         this.idsProgressRepository = idsProgressRepository;
         idsFactory = idsConfiguration.getSessionFactory();
         idsEmptyOnInit = getIdsIsEmpty();
