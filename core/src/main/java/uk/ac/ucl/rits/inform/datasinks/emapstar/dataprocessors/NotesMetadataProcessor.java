@@ -8,8 +8,8 @@ import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.NotesMetadataControl
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.PersonController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.VisitController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.exceptions.RequiredDataMissingException;
-import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
-import uk.ac.ucl.rits.inform.informdb.identity.Mrn;
+//import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
+//import uk.ac.ucl.rits.inform.informdb.identity.Mrn;
 import uk.ac.ucl.rits.inform.interchange.EmapOperationMessageProcessingException;
 import uk.ac.ucl.rits.inform.interchange.NotesMetadataMessage;
 import uk.ac.ucl.rits.inform.interchange.ResearchOptOut;
@@ -51,8 +51,8 @@ public class NotesMetadataProcessor {
             throws EmapOperationMessageProcessingException {
 
         logger.trace("Processing {}", msg);
-        Mrn mrn = getOrCreateMrn(msg, storedFrom);
-        HospitalVisit visit = getOrCreateHospitalVisit(msg, mrn, storedFrom);
+        // Mrn mrn = getOrCreateMrn(msg, storedFrom);
+        // HospitalVisit visit = getOrCreateHospitalVisit(msg, mrn, storedFrom);
         notesMetadataController.processMessage(msg, storedFrom);
     }
 
@@ -75,18 +75,18 @@ public class NotesMetadataProcessor {
      * @return HospitalVisit
      * @throws RequiredDataMissingException
      */
-    private HospitalVisit getOrCreateHospitalVisit(NotesMetadataMessage msg, Mrn mrn, Instant storedFrom)
-            throws RequiredDataMissingException {
+    // private HospitalVisit getOrCreateHospitalVisit(NotesMetadataMessage msg, Mrn mrn, Instant storedFrom)
+            // throws RequiredDataMissingException {
 
-        HospitalVisit visit = null;
+        // HospitalVisit visit = null;
 
-//        if (msg.getVisitNumber().isSave()) {
-//            visit = visitController.getOrCreateMinimalHospitalVisit(msg.getVisitNumber().get(), mrn,
+ //       if (msg.getVisitNumber().isSave()) {
+   //         visit = visitController.getOrCreateMinimalHospitalVisit(msg.ge//tVisitNumber().get(), mrn,
 //                    msg.getSourceSystem(), msg.getUpdatedDateTime(), storedFrom);
 //        }
 
-        return visit;
-    }
+        // return visit;
+    // }
 
     /**
      * Get or create an MRN id associated with a patient.
@@ -95,14 +95,14 @@ public class NotesMetadataProcessor {
      * @return HospitalVisit
      * @throws RequiredDataMissingException
      */
-    private Mrn getOrCreateMrn(NotesMetadataMessage msg, Instant storedFrom) throws RequiredDataMissingException {
+    // private Mrn getOrCreateMrn(NotesMetadataMessage msg, Instant storedFrom) throws RequiredDataMissingException {
 
-//        String mrnStr = msg.getMrn();
-//        Instant msgUpdatedTime = msg.getUpdatedDateTime();
-//
-//        return personController.getOrCreateOnMrnOnly(mrnStr, null, msg.getSourceSystem(),
-//                msgUpdatedTime, storedFrom);
-        return 
-    }
+    //     String mrnStr = msg.
+    //     Instant msgUpdatedTime = msg.getUpdatedDateTime();
+
+    //     return personController.getOrCreateOnMrnOnly(mrnStr, null, msg.getSourceSystem(),
+    //             msgUpdatedTime, storedFrom);
+
+    // }
 
 }
