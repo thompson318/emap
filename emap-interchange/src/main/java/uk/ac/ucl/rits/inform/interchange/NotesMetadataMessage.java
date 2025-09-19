@@ -6,9 +6,8 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.time.Instant;
+
 
 /**
  * Interchange format of a MetadataNotes message.
@@ -21,17 +20,36 @@ import java.util.List;
 public class NotesMetadataMessage extends EmapOperationMessage implements Serializable {
 
     /**
-     * Notes with metadata attached.
+     * Patient ID this notes relates to.
      */
-    private List<String> notes = new ArrayList<>();
+    private String mrn;
 
     /**
-     * Adds a list of strings to the notes.
-     * @param notesMetadata Collection of strings, each representing an allergy reaction.
+     * Hospital visit of the patient that this note metadata relates to.
      */
-    public void addAllReactions(Collection<String> notesMetadata) {
-        notes.addAll(notesMetadata);
-    }
+    private String visitNumber;
+
+    /**
+     * Notes metadata type name used by EPIC.
+     * e.g. ICU
+     */
+     private String noteType;
+
+    /**
+     * initial time.
+     */
+    private Instant startedDatetime;
+
+    /**
+     * last edited time.
+     */
+    private Instant lastEditDatetime;
+
+    /**
+     * role a person making the note.
+     */
+    private String editorRole;
+
 
     /**
      * Call back to the processor so it knows what type this object is (ie. double dispatch).

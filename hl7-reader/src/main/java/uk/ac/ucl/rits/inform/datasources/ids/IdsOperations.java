@@ -4,7 +4,7 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v26.message.ADT_A60;
-import ca.uhn.hl7v2.model.v26.message.MDM_T01;
+import ca.uhn.hl7v2.model.v26.message.MDM_T02;
 import ca.uhn.hl7v2.model.v26.message.ORM_O01;
 import ca.uhn.hl7v2.model.v26.message.ORR_O02;
 import ca.uhn.hl7v2.model.v26.message.ORU_R01;
@@ -477,10 +477,15 @@ public class IdsOperations implements AutoCloseable {
                 }
                 break;
             case "MDM":
-                if ("T01".equals(triggerEvent)) {
+                // note there is no separate class for T08
+                if ("T02".equals(triggerEvent)) {
                     logger.trace("Parsing NOTE");
-                    messages.add(notesMetadataFactory.buildNotesMetadata(sourceId, (MDM_T01) msgFromIds));
+                    messages.add(notesMetadataFactory.buildNotesMetadata(sourceId, (MDM_T02) msgFromIds));
                     logger.trace("After parsing notes metadata {}", messages);
+                } else if ("T08".equals(triggerEvent)) {
+                    logger.trace("Parsing  additional NOTE");
+                    messages.add(notesMetadataFactory.addToNotesMetadata(sourceId, (MDM_T02) msgFromIds));
+                    logger.trace("After parsing additionalnotes metadata {}", messages);
                 } else {
                     logErrorConstructingFromType(messageType, triggerEvent);
                 }
