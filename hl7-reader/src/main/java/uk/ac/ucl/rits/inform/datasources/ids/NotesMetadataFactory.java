@@ -26,19 +26,17 @@ public class NotesMetadataFactory {
     /**
      * Build notedata from the message.
      * @param sourceId    message sourceId
-     * @param evn         segment of the message relating to the specific trigger event of the message
-     * @param patientInfo segment of the message relating to patient information
-     * @param iam         hl7 message
+     * @param msg         hl7 message
      * @return A single patient allergy representative for one of the IAM segments in the message
      * @throws HL7Exception if message cannot be parsed correctly.
      */
-    private NotesMetadataMessage buildNotesMetadata(String sourceId, MDM_T01 msg) throws HL7Exception {
+    public NotesMetadataMessage buildNotesMetadata(String sourceId, MDM_T01 msg) throws HL7Exception {
 
         NotesMetadataMessage notesMetadataMessage = new NotesMetadataMessage();
 
         MSH msh = (MSH) msg.get("MSH");
-        PID pid = (PID) msg.get("PID"); 
-        PV1 pv1 = (PV1) msg.getPV1();     
+        PID pid = (PID) msg.get("PID");
+        PV1 pv1 = (PV1) msg.getPV1();
         EVN evn = (EVN) msg.get("EVN");
         Instant recordedDateTime = HL7Utils.interpretLocalTime(evn.getRecordedDateTime());
 
@@ -46,8 +44,8 @@ public class NotesMetadataFactory {
         // generic information
         notesMetadataMessage.setSourceMessageId(sourceId);
         notesMetadataMessage.setSourceSystem(patientInfo.getSendingApplication());
-        notesMetadataMessage.setMrn(patientInfo.getMrn());
-        notesMetadataMessage.setUpdatedDateTime(HL7Utils.interpretLocalTime(evn.getEvn2_RecordedDateTime()));
+//        notesMetadataMessage.setMrn(patientInfo.getMrn());
+//        notesMetadataMessage.setUpdatedDateTime(HL7Utils.interpretLocalTime(evn.getEvn2_RecordedDateTime()));
 
         return notesMetadataMessage;
     }

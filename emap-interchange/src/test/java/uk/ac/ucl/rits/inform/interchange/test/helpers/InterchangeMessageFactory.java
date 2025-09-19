@@ -27,6 +27,7 @@ import uk.ac.ucl.rits.inform.interchange.location.LocationMetadata;
 import uk.ac.ucl.rits.inform.interchange.visit_observations.Flowsheet;
 import uk.ac.ucl.rits.inform.interchange.visit_observations.FlowsheetMetadata;
 import uk.ac.ucl.rits.inform.interchange.visit_observations.WaveformMessage;
+import uk.ac.ucl.rits.inform.interchange.NotesMetadataMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,6 +104,18 @@ public class InterchangeMessageFactory {
      */
     public AdvanceDecisionMessage getAdvanceDecision(final String fileName) throws IOException {
         InputStream inputStream = getInputStream(String.format("/AdvanceDecision/%s", fileName));
+        return EmapYamlMapper.readValue(inputStream, new TypeReference<>() {});
+    }
+
+    /**
+     * Builds notes metadata from the file given.
+     * 
+     * @param fileName filename within the notes metadata messages folder
+     * @return note metadata message
+     * @throws IOException if the file doesn't exist
+     */
+    public NotesMetadataMessage getNoteMessage(final String fileName) throws IOException {
+        InputStream inputStream = getInputStream(String.format("/Notes/%s", fileName));
         return EmapYamlMapper.readValue(inputStream, new TypeReference<>() {});
     }
 
