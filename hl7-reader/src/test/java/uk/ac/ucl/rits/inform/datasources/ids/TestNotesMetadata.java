@@ -22,12 +22,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TestNotesMetadata extends TestHl7MessageStream {
     private static final String FILE_TEMPLATE = "NotesMetadata/%s.txt";
     private static final String MRN = "40800000";
-    private static final Instant CHANGE_TIME = Instant.parse("2013-02-14T09:00:00Z");
-    private static final Instant CANCEL_TIME = Instant.parse("2013-02-14T10:00:00Z");
-    private static final Instant CLOSED_TIME = Instant.parse("2013-02-14T10:00:00Z");
-    private static final Instant REQUEST_TIME = Instant.parse("2013-02-12T11:55:00Z");
+    private static final Instant START_TIME = Instant.parse("2013-02-14T09:00:00Z");
+    private static final Instant EDIT_TIME = Instant.parse("2013-02-14T09|:00:00Z");
     private static final String EPIC = "EPIC";
-    private static final String ADVANCED_CARE_CODE = "COD4";
+    private static final String DOCUMENT_TYPE = "ICU WR";
     private static final String VISIT_NUMBER = "123412341234";
     private static final String ADVANCED_DECISION_TYPE_NAME = "FULL ACTIVE TREATMENT";
 
@@ -64,12 +62,12 @@ public class TestNotesMetadata extends TestHl7MessageStream {
     void testSingleNoteProcessed() throws Exception {
         NotesMetadataMessage notesMetadataMessage = getNotesMetadata("minimal");
         assertEquals(MRN, notesMetadataMessage.getMrn());
-        // assertEquals(EPIC, notesMetadataMessage.getSourceSystem());
-        // assertEquals(CHANGE_TIME, notesMetadataMessage.getStatusChangeDatetime());
-        // assertEquals(REQUEST_TIME, notesMetadataMessage.getRequestedDatetime());
+        assertEquals(EPIC, notesMetadataMessage.getSourceSystem());
+        assertEquals(START_TIME, notesMetadataMessage.getStartedDatetime());
+        assertEquals(EDIT_TIME, notesMetadataMessage.getLastEditDatetime());
         // assertEquals(ADVANCED_CARE_CODE, notesMetadataMessage.getAdvanceCareCode());
-        // assertEquals(VISIT_NUMBER, notesMetadataMessage.getVisitNumber());
-        // assertEquals(ADVANCED_DECISION_TYPE_NAME, notesMetadataMessage.getNotesMetadataTypeName());
+        assertEquals(VISIT_NUMBER, notesMetadataMessage.getVisitNumber());
+        assertEquals(DOCUMENT_TYPE, notesMetadataMessage.getNoteType());
     }
 
     /**

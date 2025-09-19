@@ -1,12 +1,13 @@
 package uk.ac.ucl.rits.inform.datasources.ids;
 
 import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.model.v26.message.MDM_T01;
+//import ca.uhn.hl7v2.model.v26.message.MDM_T01;
 import ca.uhn.hl7v2.model.v26.message.MDM_T02;
 import ca.uhn.hl7v2.model.v26.segment.EVN;
 import ca.uhn.hl7v2.model.v26.segment.MSH;
 import ca.uhn.hl7v2.model.v26.segment.PID;
 import ca.uhn.hl7v2.model.v26.segment.PV1;
+import ca.uhn.hl7v2.model.v26.segment.TXA;
 
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,7 @@ public class NotesMetadataFactory {
         PID pid = (PID) msg.get("PID");
         PV1 pv1 = (PV1) msg.getPV1();
         EVN evn = (EVN) msg.get("EVN");
+        TXA txa = (TXA) msg.getTXA();
         Instant recordedDateTime = HL7Utils.interpretLocalTime(evn.getRecordedDateTime());
 
         PatientInfoHl7 patientInfo = new PatientInfoHl7(msh, pid, pv1);
@@ -46,7 +48,10 @@ public class NotesMetadataFactory {
         notesMetadataMessage.setSourceMessageId(sourceId);
         notesMetadataMessage.setSourceSystem(patientInfo.getSendingApplication());
         notesMetadataMessage.setMrn(patientInfo.getMrn());
-//        notesMetadataMessage.setUpdatedDateTime(HL7Utils.interpretLocalTime(evn.getEvn2_RecordedDateTime()));
+        notesMetadataMessage.setVisitNumber(patientInfo.getVisitNumberFromPv1orPID());
+        notesMetadataMessage.setNoteType(txa.getDocumentType().toString());
+        notesMetadataMessage.setStartedDatetime(HL7Utils.interpretLocalTime(txa.getOriginationDateTime()));
+        notesMetadataMessage.setLastEditDatetime(HL7Utils.interpretLocalTime(txa.getActivityDateTime() ));
 
         return notesMetadataMessage;
     }
