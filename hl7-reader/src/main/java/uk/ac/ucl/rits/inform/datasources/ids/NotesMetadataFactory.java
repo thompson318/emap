@@ -12,6 +12,7 @@ import ca.uhn.hl7v2.model.v26.segment.TXA;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import uk.ac.ucl.rits.inform.datasources.ids.hl7.parser.NotesMetadataHl7;
 import uk.ac.ucl.rits.inform.datasources.ids.hl7.parser.PatientInfoHl7;
 import uk.ac.ucl.rits.inform.interchange.NotesMetadataMessage;
 
@@ -29,7 +30,7 @@ public class NotesMetadataFactory {
      * Build notedata from the message.
      * @param sourceId    message sourceId
      * @param msg         hl7 message
-     * @return A single patient allergy representative for one of the IAM segments in the message
+     * @return A single notes allergy representative for one of the IAM segments in the message
      * @throws HL7Exception if message cannot be parsed correctly.
      */
     public NotesMetadataMessage buildNotesMetadata(String sourceId, MDM_T02 msg) throws HL7Exception {
@@ -39,19 +40,19 @@ public class NotesMetadataFactory {
         MSH msh = (MSH) msg.get("MSH");
         PID pid = (PID) msg.get("PID");
         PV1 pv1 = (PV1) msg.getPV1();
-        EVN evn = (EVN) msg.get("EVN");
+//          EVN evn = (EVN) msg.get("EVN");
         TXA txa = (TXA) msg.getTXA();
-        Instant recordedDateTime = HL7Utils.interpretLocalTime(evn.getRecordedDateTime());
+ //       Instant recordedDateTime = HL7Utils.interpretLocalTime(evn.getRecordedDateTime());
+        NotesMetadataHl7 notesInfo = new NotesMetadataHl7(msh, pid, pv1, txa);
 
-        PatientInfoHl7 patientInfo = new PatientInfoHl7(msh, pid, pv1);
         // generic information
         notesMetadataMessage.setSourceMessageId(sourceId);
-        notesMetadataMessage.setSourceSystem(patientInfo.getSendingApplication());
-        notesMetadataMessage.setMrn(patientInfo.getMrn());
-        notesMetadataMessage.setVisitNumber(patientInfo.getVisitNumberFromPv1orPID());
-        notesMetadataMessage.setNoteType(txa.getDocumentType().toString());
-        notesMetadataMessage.setStartedDatetime(HL7Utils.interpretLocalTime(txa.getOriginationDateTime()));
-        notesMetadataMessage.setLastEditDatetime(HL7Utils.interpretLocalTime(txa.getActivityDateTime() ));
+        notesMetadataMessage.setSourceSystem(notesInfo.getSendingApplication());
+        notesMetadataMessage.setMrn(notesInfo.getMrn());
+        notesMetadataMessage.setVisitNumber(notesInfo.getVisitNumberFromPv1orPID());
+        notesMetadataMessage.setNoteType(notesInfo.getNotesMetadataTypeString());
+        notesMetadataMessage.setStartedDatetime(notesInfo.getNotesMetadataOriginatingInstant());
+        notesMetadataMessage.setLastEditDatetime(notesInfo.getNotesMetadataActivityInstant());
 
         return notesMetadataMessage;
     }
@@ -60,7 +61,7 @@ public class NotesMetadataFactory {
      * Build notedata from the message.
      * @param sourceId    message sourceId
      * @param msg         hl7 message
-     * @return A single patient allergy representative for one of the IAM segments in the message
+     * @return A single notes allergy representative for one of the IAM segments in the message
      * @throws HL7Exception if message cannot be parsed correctly.
      */
     public NotesMetadataMessage addToNotesMetadata(String sourceId, MDM_T02 msg) throws HL7Exception {
@@ -73,11 +74,11 @@ public class NotesMetadataFactory {
         EVN evn = (EVN) msg.get("EVN");
         Instant recordedDateTime = HL7Utils.interpretLocalTime(evn.getRecordedDateTime());
 
-        PatientInfoHl7 patientInfo = new PatientInfoHl7(msh, pid, pv1);
+        PatientInfoHl7 notesInfo = new PatientInfoHl7(msh, pid, pv1);
         // generic information
         notesMetadataMessage.setSourceMessageId(sourceId);
-        notesMetadataMessage.setSourceSystem(patientInfo.getSendingApplication());
-//        notesMetadataMessage.setMrn(patientInfo.getMrn());
+        notesMetadataMessage.setSourceSystem(notesInfo.getSendingApplication());
+//        notesMetadataMessage.setMrn(notesInfo.getMrn());
 //        notesMetadataMessage.setUpdatedDateTime(HL7Utils.interpretLocalTime(evn.getEvn2_RecordedDateTime()));
 
         return notesMetadataMessage;
