@@ -24,10 +24,11 @@ public class TestNotesMetadata extends TestHl7MessageStream {
     private static final String MRN = "40800000";
     private static final Instant START_TIME = Instant.parse("2013-02-14T09:00:00Z");
     private static final Instant EDIT_TIME = Instant.parse("2013-02-14T09:00:00Z");
+    private static final Instant MSG_TIME = Instant.parse("2013-02-14T10:00:00Z");
     private static final String EPIC = "EPIC";
     private static final String DOCUMENT_TYPE = "ICU WR";
     private static final String VISIT_NUMBER = "123412341234";
-    private static final String ADVANCED_DECISION_TYPE_NAME = "FULL ACTIVE TREATMENT";
+    
 
     /**
      * Read the notes from a tested HL7 message
@@ -55,7 +56,7 @@ public class TestNotesMetadata extends TestHl7MessageStream {
 
     /**
      * Given that nothing has been parsed before
-     * When an 
+     * When an TXA segment is encountered it should be parsed
      * @throws Exception shouldn't happen
      */
     @Test
@@ -65,16 +66,22 @@ public class TestNotesMetadata extends TestHl7MessageStream {
         assertEquals(EPIC, notesMetadataMessage.getSourceSystem());
         assertEquals(START_TIME, notesMetadataMessage.getStartedDatetime());
         assertEquals(EDIT_TIME, notesMetadataMessage.getLastEditDatetime());
-        // assertEquals(ADVANCED_CARE_CODE, notesMetadataMessage.getAdvanceCareCode());
         assertEquals(VISIT_NUMBER, notesMetadataMessage.getVisitNumber());
         assertEquals(DOCUMENT_TYPE, notesMetadataMessage.getNoteType());
     }
 
     /**
-     * There shouldn't be multiple TXA segments > 
+     * If the dates are missing on the TXA segment use the main date of the message.
+     * @throws Exception shouldn't happen
      */
-//    @Test
-//    void testMultipleRequestInMessageThrows() {
-//      assertThrows(Hl7InconsistencyException.class, () -> getNotesMetadata("multiple_requests"));
-//    }
+    @Test
+    void testMissingDate() throws Exception {
+        NotesMetadataMessage notesMetadataMessage = getNotesMetadata("missing_date");
+        assertEquals(MRN, notesMetadataMessage.getMrn());
+        assertEquals(EPIC, notesMetadataMessage.getSourceSystem());
+        assertEquals(MSG_TIME, notesMetadataMessage.getStartedDatetime());
+        assertEquals(VISIT_NUMBER, notesMetadataMessage.getVisitNumber());
+        assertEquals(DOCUMENT_TYPE, notesMetadataMessage.getNoteType());
+        assertNull(notesMetadataMessage.getLastEditDatetime());
+    }
 }

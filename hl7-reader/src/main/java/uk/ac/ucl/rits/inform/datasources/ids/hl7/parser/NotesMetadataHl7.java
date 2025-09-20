@@ -1,5 +1,7 @@
 package uk.ac.ucl.rits.inform.datasources.ids.hl7.parser;
 
+import java.time.Instant;
+
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.v26.segment.MSH;
 import ca.uhn.hl7v2.model.v26.segment.PID;
@@ -63,6 +65,14 @@ public class NotesMetadataHl7 implements PV1Wrap, PIDWrap, MSHWrap, TXAWrap {
             visitNumber = getPatientAccountNumber();
         }
         return visitNumber;
+    }
+
+    public Instant getNotesMetadataOriginatingInstantFromMSHIfEmpty() throws HL7Exception {
+        Instant originatingInstant = getNotesMetadataOriginatingInstant();
+        if (originatingInstant == null){
+            originatingInstant = getMessageTimestamp();
+        }
+        return originatingInstant;
     }
 
 }
