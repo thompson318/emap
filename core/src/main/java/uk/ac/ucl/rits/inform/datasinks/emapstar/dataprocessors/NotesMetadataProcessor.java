@@ -4,17 +4,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.NotesMetadataController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.PersonController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.VisitController;
-import uk.ac.ucl.rits.inform.datasinks.emapstar.exceptions.RequiredDataMissingException;
+
 import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
 import uk.ac.ucl.rits.inform.informdb.identity.Mrn;
-//import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
-//import uk.ac.ucl.rits.inform.informdb.identity.Mrn;
+
 import uk.ac.ucl.rits.inform.interchange.EmapOperationMessageProcessingException;
 import uk.ac.ucl.rits.inform.interchange.NotesMetadataMessage;
-import uk.ac.ucl.rits.inform.interchange.ResearchOptOut;
+
 
 import java.time.Instant;
 
@@ -59,8 +59,6 @@ public class NotesMetadataProcessor {
         HospitalVisit visit = visitController.getOrCreateMinimalHospitalVisit(
                 msg.getVisitNumber(), mrn, msg.getSourceSystem(), msg.getLastEditDatetime(), storedFrom);
         logger.trace("Processing {}", msg);
-        
-        
         notesMetadataController.processMessage(msg, visit, storedFrom);
     }
 }

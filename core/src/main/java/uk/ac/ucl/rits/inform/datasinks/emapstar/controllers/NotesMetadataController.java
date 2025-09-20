@@ -13,20 +13,10 @@ import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.NotesMetadataRepository;
 
 import uk.ac.ucl.rits.inform.informdb.notes.NotesMetadata;
 import uk.ac.ucl.rits.inform.informdb.notes.NotesMetadataAudit;
-import uk.ac.ucl.rits.inform.informdb.decisions.AdvanceDecision;
-import uk.ac.ucl.rits.inform.informdb.decisions.AdvanceDecisionAudit;
-import uk.ac.ucl.rits.inform.informdb.decisions.AdvanceDecisionType;
 import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
-import uk.ac.ucl.rits.inform.interchange.AdvanceDecisionMessage;
-//import uk.ac.ucl.rits.inform.informdb.movement.LocationVisit;
-//import uk.ac.ucl.rits.inform.informdb.visit_recordings.VisitObservationType;
-//import uk.ac.ucl.rits.inform.informdb.notes.NotesMetadata;
-//import uk.ac.ucl.rits.inform.interchange.InterchangeValue;
 import uk.ac.ucl.rits.inform.interchange.NotesMetadataMessage;
 
 import java.time.Instant;
-//import java.util.List;
-//import java.util.Optional;
 
 /**
  * Controller for NotesMetadata specific information.
@@ -49,6 +39,7 @@ public class NotesMetadataController {
     /**
      * Process notesMetadata data message.
      * @param msg the interchange message
+     * @param visit the hospital visit
      * @param storedFrom stored from timestamp
      * @throws MessageIgnoredException if message not processed
      */
@@ -68,13 +59,12 @@ public class NotesMetadataController {
      * @param storedFrom          Time that emap-core started processing this advanced decision message.
      * @return AdvancedDecision entity wrapped in RowState
      */
-    private RowState<NotesMetadata, NotesMetadataAudit> getOrCreateNotesMetadata(
-            NotesMetadataMessage msg, HospitalVisit visit, 
-            Instant storedFrom) {
+    private RowState<NotesMetadata, NotesMetadataAudit> getOrCreateNotesMetadata(NotesMetadataMessage msg, HospitalVisit visit,
+        Instant storedFrom) {
         return notesMetadataRepository
-                .findByInternalId(msg.getNotesMetadataNumber()) 
-                .map(obs -> new RowState<>(obs, msg.getLastEditDatetime(), storedFrom, false))
-                .orElseGet(() -> createMinimalNotesMetadata(msg, visit,storedFrom));
+            .findByInternalId(msg.getNotesMetadataNumber())
+            .map(obs -> new RowState<>(obs, msg.getLastEditDatetime(), storedFrom, false))
+            .orElseGet(() -> createMinimalNotesMetadata(msg, visit, storedFrom));
     }
 
     /**
@@ -84,9 +74,9 @@ public class NotesMetadataController {
      * @param storedFrom          Time that emap-core started processing the advanced decision of that patient.
      * @return minimal advanced decision wrapped in RowState
      */
-    private RowState<NotesMetadata, NotesMetadataAudit> createMinimalNotesMetadata(
-            NotesMetadataMessage msg, HospitalVisit visit, 
-            Instant storedFrom) {
+    private RowState<NotesMetadata, NotesMetadataAudit>
+        createMinimalNotesMetadata(NotesMetadataMessage msg,
+            HospitalVisit visit, Instant storedFrom) {
         NotesMetadata notesMetadata = new NotesMetadata(msg.getNotesMetadataNumber(), visit);
         logger.debug("Created new {}", notesMetadata);
         return new RowState<>(notesMetadata, msg.getLastEditDatetime(), storedFrom, true);
@@ -114,7 +104,7 @@ public class NotesMetadataController {
         NotesMetadata notesMetadata = notesMetadataState.getEntity();
 
         notesMetadataState.assignIfDifferent(msg.getLastEditDatetime(), notesMetadata.getLastEditDatetime(),
-                notesMetadata::setLastEditDatetime();
+                notesMetadata::setLastEditDatetime);
     }
 }
 
