@@ -49,35 +49,8 @@ public class NotesMetadataFactory {
         notesMetadataMessage.setMrn(notesInfo.getMrn());
         notesMetadataMessage.setVisitNumber(notesInfo.getVisitNumberFromPv1orPID());
         notesMetadataMessage.setNoteType(notesInfo.getNotesMetadataTypeString());
-        notesMetadataMessage.setStartedDatetime(notesInfo.getNotesMetadataOriginatingInstant());
+        notesMetadataMessage.setStartedDatetime(notesInfo.getNotesMetadataOriginatingInstantFromMSHIfEmpty());
         notesMetadataMessage.setLastEditDatetime(notesInfo.getNotesMetadataActivityInstant());
-
-        return notesMetadataMessage;
-    }
-
-    /**
-     * Build notedata from the message.
-     * @param sourceId    message sourceId
-     * @param msg         hl7 message
-     * @return A single notes allergy representative for one of the IAM segments in the message
-     * @throws HL7Exception if message cannot be parsed correctly.
-     */
-    public NotesMetadataMessage addToNotesMetadata(String sourceId, MDM_T02 msg) throws HL7Exception {
-
-        NotesMetadataMessage notesMetadataMessage = new NotesMetadataMessage();
-
-        MSH msh = (MSH) msg.get("MSH");
-        PID pid = (PID) msg.get("PID");
-        PV1 pv1 = (PV1) msg.getPV1();
-        EVN evn = (EVN) msg.get("EVN");
-        Instant recordedDateTime = HL7Utils.interpretLocalTime(evn.getRecordedDateTime());
-
-        PatientInfoHl7 notesInfo = new PatientInfoHl7(msh, pid, pv1);
-        // generic information
-        notesMetadataMessage.setSourceMessageId(sourceId);
-        notesMetadataMessage.setSourceSystem(notesInfo.getSendingApplication());
-//        notesMetadataMessage.setMrn(notesInfo.getMrn());
-//        notesMetadataMessage.setUpdatedDateTime(HL7Utils.interpretLocalTime(evn.getEvn2_RecordedDateTime()));
 
         return notesMetadataMessage;
     }

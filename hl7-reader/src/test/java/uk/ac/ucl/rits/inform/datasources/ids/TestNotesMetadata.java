@@ -28,6 +28,9 @@ public class TestNotesMetadata extends TestHl7MessageStream {
     private static final String EPIC = "EPIC";
     private static final String DOCUMENT_TYPE = "ICU WR";
     private static final String VISIT_NUMBER = "123412341234";
+    private static final Instant T08_START_TIME = Instant.parse("2021-09-01T06:00:48Z");
+    private static final Instant T08_EDIT_TIME = Instant.parse("2021-09-01T22:00:00Z");
+    private static final String T08_DOCUMENT_TYPE = "PROGRESS";
     
 
     /**
@@ -83,5 +86,21 @@ public class TestNotesMetadata extends TestHl7MessageStream {
         assertEquals(VISIT_NUMBER, notesMetadataMessage.getVisitNumber());
         assertEquals(DOCUMENT_TYPE, notesMetadataMessage.getNoteType());
         assertNull(notesMetadataMessage.getLastEditDatetime());
+    }
+
+    /**
+     * Given that nothing has been parsed before
+     * When an TXA segment is encountered it should be parsed
+     * @throws Exception shouldn't happen
+     */
+    @Test
+    void testSingleT08NoteProcessed() throws Exception {
+        NotesMetadataMessage notesMetadataMessage = getNotesMetadata("minimal_T08");
+        assertEquals(MRN, notesMetadataMessage.getMrn());
+        assertEquals(EPIC, notesMetadataMessage.getSourceSystem());
+        assertEquals(T08_START_TIME, notesMetadataMessage.getStartedDatetime());
+        assertEquals(T08_EDIT_TIME, notesMetadataMessage.getLastEditDatetime());
+        assertEquals(VISIT_NUMBER, notesMetadataMessage.getVisitNumber());
+        assertEquals(T08_DOCUMENT_TYPE, notesMetadataMessage.getNoteType());
     }
 }

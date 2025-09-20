@@ -484,7 +484,7 @@ public class IdsOperations implements AutoCloseable {
                     logger.trace("After parsing notes metadata {}", messages);
                 } else if ("T08".equals(triggerEvent)) {
                     logger.trace("Parsing  additional NOTE");
-                    messages.add(notesMetadataFactory.addToNotesMetadata(sourceId, (MDM_T02) msgFromIds));
+                    messages.add(notesMetadataFactory.buildNotesMetadata(sourceId, (MDM_T02) msgFromIds));
                     logger.trace("After parsing additionalnotes metadata {}", messages);
                 } else {
                     logErrorConstructingFromType(messageType, triggerEvent);
