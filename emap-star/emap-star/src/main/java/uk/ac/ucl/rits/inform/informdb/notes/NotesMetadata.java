@@ -76,14 +76,12 @@ public class NotesMetadata extends TemporalCore<NotesMetadata, NotesMetadataAudi
 
     /**
      * Minimal constructor.
+     * @param notesMetadataNumber unique number for this record
      * @param hospitalVisitId associated hospital visit
-     * @param noteType       type of note
-     * @param editorRole       type of note
      */
-    public NotesMetadata(HospitalVisit hospitalVisitId, String noteType, String editorRole) {
+    public NotesMetadata(Long notesMetadataId, HospitalVisit hospitalVisitId) {
         this.hospitalVisitId = hospitalVisitId;
-        this.noteType = noteType;
-        this.editorRole = editorRole;
+        this.notesMetadataId = notesMetadataId, 
     }
 
     /**

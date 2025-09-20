@@ -4,9 +4,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import uk.ac.ucl.rits.inform.datasinks.emapstar.RowState;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.exceptions.MessageIgnoredException;
-import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.LocationVisitRepository;
+import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.NotesMetadataAuditRepository;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.NotesMetadataRepository;
+
+
+import uk.ac.ucl.rits.inform.informdb.notes.NotesMetadata;
+import uk.ac.ucl.rits.inform.informdb.notes.NotesMetadataAudit;
+import uk.ac.ucl.rits.inform.informdb.decisions.AdvanceDecision;
+import uk.ac.ucl.rits.inform.informdb.decisions.AdvanceDecisionAudit;
+import uk.ac.ucl.rits.inform.informdb.decisions.AdvanceDecisionType;
+import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
+import uk.ac.ucl.rits.inform.interchange.AdvanceDecisionMessage;
 //import uk.ac.ucl.rits.inform.informdb.movement.LocationVisit;
 //import uk.ac.ucl.rits.inform.informdb.visit_recordings.VisitObservationType;
 //import uk.ac.ucl.rits.inform.informdb.notes.NotesMetadata;
@@ -26,14 +37,13 @@ public class NotesMetadataController {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final NotesMetadataRepository notesMetadataRepository;
-    private final LocationVisitRepository locationVisitRepository;
+    private final NotesMetadataAuditRepository notesMetadataAuditRepository;
 
     NotesMetadataController(
             NotesMetadataRepository notesMetadataRepository,
-            LocationVisitRepository locationVisitRepository
-    ) {
+            NotesMetadataAuditRepository notesMetadataAuditRepository) {
         this.notesMetadataRepository = notesMetadataRepository;
-        this.locationVisitRepository = locationVisitRepository;
+        this.notesMetadataAuditRepository = notesMetadataAuditRepository;
     }
 
     /**
@@ -45,49 +55,66 @@ public class NotesMetadataController {
     @Transactional
     public void processMessage(
             NotesMetadataMessage msg,
+            HospitalVisit visit,
             Instant storedFrom) throws MessageIgnoredException {
-//        InterchangeValue<List<Double>> interchangeValue = msg.getNumericValues();
-//        if (!interchangeValue.isSave()) {
-//            throw new MessageIgnoredException("Updating/deleting notesMetadata data is not supported");
-//        }
-//        // All given values are put into one new row. It's the responsibility of whoever is
-//        // generating the message to choose an appropriate size of array.
-//        List<Double> numericValues = interchangeValue.get();
-//        Instant observationTime = msg.getObservationTime();
-//        // Try to find the visit. We don't have enough information to create the visit if it doesn't already exist.
-//        Optional<LocationVisit> inferredLocationVisit =
-//                locationVisitRepository.findLocationVisitByLocationAndTime(observationTime, msg.getMappedLocationString());
-//        // XXX: will have to do some sanity checks here to be sure that the HL7 feed hasn't gone down.
-//        // See issue #36, and here for discussion:
-//        // https://github.com/SAFEHR-data/emap/blob/develop/docs/dev/features/notesMetadata_hf_data.md#core-processor-logic-orphan-data-problem
-//        NotesMetadata dataRow = new NotesMetadata(
-//                observationTime,
-//                observationTime,
-//                storedFrom);
-//        inferredLocationVisit.ifPresent(dataRow::setLocationVisitId);
-//        Double[] valuesAsArray = numericValues.toArray(new Double[0]);
-//        dataRow.setSamplingRate(msg.getSamplingRate());
-//        dataRow.setSourceLocation(msg.getSourceLocationString());
-//        dataRow.setVisitObservationTypeId(visitObservationType);
-//        dataRow.setUnit(msg.getUnit());
-//        dataRow.setValuesArray(valuesAsArray);
-//        notesMetadataRepository.save(dataRow);
+        RowState<NotesMetadata, NotesMetadataAudit> notesMetadataState = getOrCreateNotesMetadata(
+                msg, visit, storedFrom);
     }
 
-//    /**
-//     * Delete notesMetadata data before the cutoff date.
-//     * @param olderThanCutoff cutoff date
-//     * @return number of rows deleted
-//     */
-//    @Transactional
-//    public int deleteOldWaveformData(Instant olderThanCutoff) {
-//        return notesMetadataRepository.deleteAllInBatchByObservationDatetimeBefore(olderThanCutoff);
-//    }
-//
-//    /**
-//     * @return Return observation datetime of most recent notesMetadata data.
-//     */
-//    public Instant mostRecentObservationDatatime() {
-//        return notesMetadataRepository.mostRecentObservationDatatime();
-  //  }
+    /**
+     * Get existing or create new advance decision.
+     * @param msg                 Advance decision message.
+     * @param visit               Hospital visit of patient this advanced decision message refers to.
+     * @param storedFrom          Time that emap-core started processing this advanced decision message.
+     * @return AdvancedDecision entity wrapped in RowState
+     */
+    private RowState<NotesMetadata, NotesMetadataAudit> getOrCreateNotesMetadata(
+            NotesMetadataMessage msg, HospitalVisit visit, 
+            Instant storedFrom) {
+        return notesMetadataRepository
+                .findByInternalId(msg.getNotesMetadataNumber()) 
+                .map(obs -> new RowState<>(obs, msg.getLastEditDatetime(), storedFrom, false))
+                .orElseGet(() -> createMinimalNotesMetadata(msg, visit,storedFrom));
+    }
+
+    /**
+     * Create minimal advance decision wrapped in RowState.
+     * @param msg                 Advance decision message
+     * @param visit               Hospital visit of the patient advanced decision was recorded for.
+     * @param storedFrom          Time that emap-core started processing the advanced decision of that patient.
+     * @return minimal advanced decision wrapped in RowState
+     */
+    private RowState<NotesMetadata, NotesMetadataAudit> createMinimalNotesMetadata(
+            NotesMetadataMessage msg, HospitalVisit visit, 
+            Instant storedFrom) {
+        NotesMetadata notesMetadata = new NotesMetadata(msg.getNotesMetadataNumber(), visit);
+        logger.debug("Created new {}", notesMetadata);
+        return new RowState<>(notesMetadata, msg.getLastEditDatetime(), storedFrom, true);
+    }
+
+    /**
+     * Decides whether or not the data held for a specific advance decision needs to be updated or not.
+     * @param statusChangeDatetime  Datetime of NotesMetadataMessage that's currently processed.
+     * @param notesMetadataState State of advance decision created from message.
+     * @return true if message should be updated
+     */
+    private boolean messageShouldBeUpdated(Instant statusChangeDatetime, RowState<NotesMetadata,
+            NotesMetadataAudit> notesMetadataState) {
+        return (notesMetadataState.isEntityCreated() || !statusChangeDatetime.isBefore(
+                notesMetadataState.getEntity().getValidFrom()));
+    }
+
+    /**
+     * Update advance decision data with information from NotesMetadataMessage.
+     * @param msg                  Advance decision message.
+     * @param notesMetadataState Advance decision referred to in message
+     */
+    private void updateNotesMetadata(NotesMetadataMessage msg, RowState<NotesMetadata,
+            NotesMetadataAudit> notesMetadataState) {
+        NotesMetadata notesMetadata = notesMetadataState.getEntity();
+
+        notesMetadataState.assignIfDifferent(msg.getLastEditDatetime(), notesMetadata.getLastEditDatetime(),
+                notesMetadata::setLastEditDatetime();
+    }
 }
+

@@ -8,6 +8,8 @@ import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.NotesMetadataControl
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.PersonController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.VisitController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.exceptions.RequiredDataMissingException;
+import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
+import uk.ac.ucl.rits.inform.informdb.identity.Mrn;
 //import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
 //import uk.ac.ucl.rits.inform.informdb.identity.Mrn;
 import uk.ac.ucl.rits.inform.interchange.EmapOperationMessageProcessingException;
@@ -49,60 +51,16 @@ public class NotesMetadataProcessor {
     @Transactional
     public void processMessage(final NotesMetadataMessage msg, final Instant storedFrom)
             throws EmapOperationMessageProcessingException {
+        Instant msgStatusChangeTime = msg.getLastEditDatetime();
 
+        // retrieve patient to whom message refers to; if MRN not registered, create new patient
+        Mrn mrn = personController.getOrCreateOnMrnOnly(msg.getMrn(), null, msg.getSourceSystem(),
+                msgStatusChangeTime, storedFrom);
+        HospitalVisit visit = visitController.getOrCreateMinimalHospitalVisit(
+                msg.getVisitNumber(), mrn, msg.getSourceSystem(), msg.getLastEditDatetime(), storedFrom);
         logger.trace("Processing {}", msg);
-        // Mrn mrn = getOrCreateMrn(msg, storedFrom);
-        // HospitalVisit visit = getOrCreateHospitalVisit(msg, mrn, storedFrom);
-        notesMetadataController.processMessage(msg, storedFrom);
+        
+        
+        notesMetadataController.processMessage(msg, visit, storedFrom);
     }
-
-    /**
-     * Update or create patient with research opt out flag set to true.
-     * @param msg        research opt out
-     * @param storedFrom time that star started processing the message
-     * @throws RequiredDataMissingException If MRN and NHS number are both null
-     */
-    @Transactional
-    public void processMessage(ResearchOptOut msg, final Instant storedFrom) throws RequiredDataMissingException {
-        personController.updateOrCreateWithResearchOptOut(msg, storedFrom);
-    }
-
-    /**
-     * Get or create a hospital visit using the visitController.
-     * @param msg        Patient condition message
-     * @param mrn        MRN
-     * @param storedFrom Instant at which the message started being processed
-     * @return HospitalVisit
-     * @throws RequiredDataMissingException
-     */
-    // private HospitalVisit getOrCreateHospitalVisit(NotesMetadataMessage msg, Mrn mrn, Instant storedFrom)
-            // throws RequiredDataMissingException {
-
-        // HospitalVisit visit = null;
-
- //       if (msg.getVisitNumber().isSave()) {
-   //         visit = visitController.getOrCreateMinimalHospitalVisit(msg.ge//tVisitNumber().get(), mrn,
-//                    msg.getSourceSystem(), msg.getUpdatedDateTime(), storedFrom);
-//        }
-
-        // return visit;
-    // }
-
-    /**
-     * Get or create an MRN id associated with a patient.
-     * @param msg        Patient condition message
-     * @param storedFrom Instant at which the message started being processed
-     * @return HospitalVisit
-     * @throws RequiredDataMissingException
-     */
-    // private Mrn getOrCreateMrn(NotesMetadataMessage msg, Instant storedFrom) throws RequiredDataMissingException {
-
-    //     String mrnStr = msg.
-    //     Instant msgUpdatedTime = msg.getUpdatedDateTime();
-
-    //     return personController.getOrCreateOnMrnOnly(mrnStr, null, msg.getSourceSystem(),
-    //             msgUpdatedTime, storedFrom);
-
-    // }
-
 }

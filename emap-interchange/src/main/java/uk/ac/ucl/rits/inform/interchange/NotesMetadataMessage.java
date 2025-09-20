@@ -18,6 +18,10 @@ import java.time.Instant;
 @ToString(callSuper = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
 public class NotesMetadataMessage extends EmapOperationMessage implements Serializable {
+    /**
+     * Unique epic ID for notesMetadata.
+     */
+    private Long notesMetadataNumber;
 
     /**
      * Patient ID this notes relates to.
