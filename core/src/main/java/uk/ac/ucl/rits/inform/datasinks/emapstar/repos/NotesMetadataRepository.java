@@ -18,7 +18,7 @@ public interface NotesMetadataRepository extends CrudRepository<NotesMetadata, L
      * @param internalId internal ID for the notes metadata
      * @return possible NotesMetadata
      */
-    Optional<NotesMetadata> findByInternalId(Long internalId);
+    Optional<NotesMetadata> findByInternalId(Long notesMetadatacdId);
 
     List<NotesMetadata> findAllByHospitalVisitId(HospitalVisit hospitalVisit);
 }
