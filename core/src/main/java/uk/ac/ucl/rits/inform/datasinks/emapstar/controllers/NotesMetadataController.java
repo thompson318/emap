@@ -48,12 +48,10 @@ public class NotesMetadataController {
             NotesMetadataMessage msg,
             HospitalVisit visit,
             Instant storedFrom) throws MessageIgnoredException {
-        
-        RowState<NotesMetadata, NotesMetadataAudit> notesMetadataState =        
-            getOrCreateNotesMetadata(msg, visit, storedFrom);
-        
-        if (messageShouldBeUpdated (msg.getLastEditDatetime(), 
-            notesMetadataState)){
+
+        RowState<NotesMetadata, NotesMetadataAudit> notesMetadataState =      getOrCreateNotesMetadata(msg, visit, storedFrom);
+
+        if (messageShouldBeUpdated(msg.getLastEditDatetime(),     notesMetadataState)) {
             updateNotesMetadata(msg, notesMetadataState);
         }
 
@@ -67,7 +65,7 @@ public class NotesMetadataController {
      * @param storedFrom          Time that emap-core started processing this advanced decision message.
      * @return AdvancedDecision entity wrapped in RowState
      */
-    private RowState<NotesMetadata, NotesMetadataAudit> getOrCreateNotesMetadata(   NotesMetadataMessage msg, HospitalVisit visit,
+    private RowState<NotesMetadata, NotesMetadataAudit> getOrCreateNotesMetadata(NotesMetadataMessage msg, HospitalVisit visit,
         Instant storedFrom) {
         return notesMetadataRepository
             .findByInternalId(msg.getNotesMetadataId())
