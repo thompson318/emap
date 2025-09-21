@@ -81,7 +81,7 @@ public class NotesMetadata extends TemporalCore<NotesMetadata, NotesMetadataAudi
      */
     public NotesMetadata(Long notesMetadataId, HospitalVisit hospitalVisitId) {
         this.hospitalVisitId = hospitalVisitId;
-        this.notesMetadataId = notesMetadataId, 
+        this.notesMetadataId = notesMetadataId;
     }
 
     /**
