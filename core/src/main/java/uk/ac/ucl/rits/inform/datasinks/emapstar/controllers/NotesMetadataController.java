@@ -48,8 +48,16 @@ public class NotesMetadataController {
             NotesMetadataMessage msg,
             HospitalVisit visit,
             Instant storedFrom) throws MessageIgnoredException {
-        RowState<NotesMetadata, NotesMetadataAudit> notesMetadataState = getOrCreateNotesMetadata(
-                msg, visit, storedFrom);
+        
+        RowState<NotesMetadata, NotesMetadataAudit> notesMetadataState =        
+            getOrCreateNotesMetadata(msg, visit, storedFrom);
+        
+        if (messageShouldBeUpdated (msg.getLastEditDatetime(), 
+            notesMetadataState)){
+            updateNotesMetadata(msg, notesMetadataState);
+        }
+
+        notesMetadataState.saveEntityOrAuditLogIfRequired(notesMetadataRepository, notesMetadataAuditRepository);
     }
 
     /**
@@ -59,10 +67,10 @@ public class NotesMetadataController {
      * @param storedFrom          Time that emap-core started processing this advanced decision message.
      * @return AdvancedDecision entity wrapped in RowState
      */
-    private RowState<NotesMetadata, NotesMetadataAudit> getOrCreateNotesMetadata(NotesMetadataMessage msg, HospitalVisit visit,
+    private RowState<NotesMetadata, NotesMetadataAudit> getOrCreateNotesMetadata(   NotesMetadataMessage msg, HospitalVisit visit,
         Instant storedFrom) {
         return notesMetadataRepository
-            .findByInternalId(msg.getNotesMetadataNumber())
+            .findByInternalId(msg.getNotesMetadataId())
             .map(obs -> new RowState<>(obs, msg.getLastEditDatetime(), storedFrom, false))
             .orElseGet(() -> createMinimalNotesMetadata(msg, visit, storedFrom));
     }
@@ -77,7 +85,8 @@ public class NotesMetadataController {
     private RowState<NotesMetadata, NotesMetadataAudit>
         createMinimalNotesMetadata(NotesMetadataMessage msg,
             HospitalVisit visit, Instant storedFrom) {
-        NotesMetadata notesMetadata = new NotesMetadata(msg.getNotesMetadataNumber(), visit);
+        NotesMetadata notesMetadata = new NotesMetadata(
+            msg.getNotesMetadataId(), visit);
         logger.debug("Created new {}", notesMetadata);
         return new RowState<>(notesMetadata, msg.getLastEditDatetime(), storedFrom, true);
     }

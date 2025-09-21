@@ -41,6 +41,12 @@ public class NotesMetadata extends TemporalCore<NotesMetadata, NotesMetadataAudi
      */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long notesMetadataId;
+
+    /**
+     * \brief Identifier used in source system for this notesMetadata.
+     */
+   @Column(nullable = false)
     private Long internalId;
 
     /**
@@ -91,6 +97,7 @@ public class NotesMetadata extends TemporalCore<NotesMetadata, NotesMetadataAudi
     private NotesMetadata(NotesMetadata other) {
         super(other);
         internalId = other.internalId;
+        notesMetadataId = other.notesMetadataId;
         hospitalVisitId = other.hospitalVisitId;
         noteType = other.noteType;
         editorRole = other.editorRole;

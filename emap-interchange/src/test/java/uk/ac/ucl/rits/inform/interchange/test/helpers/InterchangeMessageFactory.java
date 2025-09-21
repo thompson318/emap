@@ -65,6 +65,19 @@ public class InterchangeMessageFactory {
     }
 
     /**
+     * Builds an notesMetadata message from yaml file.
+     * @param fileName filename within test resources/NotesMetadataMessages
+     * @return NotesMetadata message
+     * @throws IOException if files don't exist
+     */
+    public <T extends NotesMetadataMessage> T getNotesMetadataMessage(final String fileName) throws IOException {
+        String resourcePath = "/NotesMetadata/" + fileName;
+        InputStream inputStream = getInputStream(resourcePath);
+
+        return EmapYamlMapper.readValue(inputStream, new TypeReference<>() {});
+    }
+
+    /**
      * Builds an ADT message from yaml file.
      * @param fileName filename within test resources/AdtMessages
      * @return ADT message

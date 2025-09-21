@@ -21,7 +21,7 @@ public class NotesMetadataMessage extends EmapOperationMessage implements Serial
     /**
      * Unique epic ID for notesMetadata.
      */
-    private Long notesMetadataNumber;
+    private Long notesMetadataId;
 
     /**
      * Patient ID this notes relates to.
