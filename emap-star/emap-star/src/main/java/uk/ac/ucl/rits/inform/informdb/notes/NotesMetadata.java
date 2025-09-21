@@ -76,7 +76,7 @@ public class NotesMetadata extends TemporalCore<NotesMetadata, NotesMetadataAudi
 
     /**
      * Minimal constructor.
-     * @param notesMetadataNumber unique number for this record
+     * @param notesMetadataId unique number for this record
      * @param hospitalVisitId associated hospital visit
      */
     public NotesMetadata(Long notesMetadataId, HospitalVisit hospitalVisitId) {
