@@ -41,7 +41,7 @@ public class NotesMetadata extends TemporalCore<NotesMetadata, NotesMetadataAudi
      */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long notesMetadataId;
+    private Long internalId;
 
     /**
      * \brief Identifier for the HospitalVisit associated with this record.
@@ -76,12 +76,12 @@ public class NotesMetadata extends TemporalCore<NotesMetadata, NotesMetadataAudi
 
     /**
      * Minimal constructor.
-     * @param notesMetadataId unique number for this record
+     * @param internalId unique number for this record
      * @param hospitalVisitId associated hospital visit
      */
-    public NotesMetadata(Long notesMetadataId, HospitalVisit hospitalVisitId) {
+    public NotesMetadata(Long internalId, HospitalVisit hospitalVisitId) {
         this.hospitalVisitId = hospitalVisitId;
-        this.notesMetadataId = notesMetadataId;
+        this.internalId = internalId;
     }
 
     /**
@@ -90,7 +90,7 @@ public class NotesMetadata extends TemporalCore<NotesMetadata, NotesMetadataAudi
      */
     private NotesMetadata(NotesMetadata other) {
         super(other);
-        notesMetadataId = other.notesMetadataId;
+        internalId = other.internalId;
         hospitalVisitId = other.hospitalVisitId;
         noteType = other.noteType;
         editorRole = other.editorRole;

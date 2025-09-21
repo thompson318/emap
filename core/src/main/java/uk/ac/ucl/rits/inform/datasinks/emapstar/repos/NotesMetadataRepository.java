@@ -15,10 +15,10 @@ import java.util.Optional;
 public interface NotesMetadataRepository extends CrudRepository<NotesMetadata, Long> {
     /**
      * Find notes metadata by unique identifier.
-     * @param notesMetadataId internal ID for the notes metadata
+     * @param internalId internal ID for the notes metadata
      * @return possible NotesMetadata
      */
-    Optional<NotesMetadata> findByInternalId(Long notesMetadataId);
+    Optional<NotesMetadata> findByInternalId(Long internalId);
 
     List<NotesMetadata> findAllByHospitalVisitId(HospitalVisit hospitalVisit);
 }
