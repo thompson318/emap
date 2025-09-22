@@ -134,7 +134,6 @@ class TestPendingAdt extends MessageProcessingBase {
         assertEquals(EVENT_TIME, plannedMovement.getEventDatetime());
         assertEquals(PendingType.DISCHARGE.toString(), plannedMovement.getEventType());
         assertNull(plannedMovement.getCancelledDatetime());
-        assertEquals("Feeling great", plannedMovement.getDischargeDisposition());
     }
 
     /**

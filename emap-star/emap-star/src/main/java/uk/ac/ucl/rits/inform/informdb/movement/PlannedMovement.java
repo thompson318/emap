@@ -91,25 +91,6 @@ public class PlannedMovement extends TemporalCore<PlannedMovement, PlannedMoveme
      */
     private String hospitalService;
 
-     /**
-     * \brief Date and time at which this hospitalVisit formally ended.
-     *
-     * at which the patient was discharged.
-     */
-    @Column(columnDefinition = "timestamp with time zone")
-    private Instant dischargeDatetime;
-
-    /**
-     * \brief Where the patient went after their departure.
-     */
-    private String dischargeDestination;
-
-    /**
-     * \brief The patient's disposition on departure.
-     */
-    private String dischargeDisposition;
-
-
     /**
      * Minimal constructor.
      * @param hospitalVisitId associated hospital visit
@@ -136,9 +117,6 @@ public class PlannedMovement extends TemporalCore<PlannedMovement, PlannedMoveme
         cancelled = other.cancelled;
         cancelledDatetime = other.cancelledDatetime;
         hospitalService = other.hospitalService;
-        dischargeDestination = other.dischargeDestination;
-        dischargeDisposition = other.dischargeDisposition;
-        dischargeDatetime = other.dischargeDatetime;
     }
 
     @Override

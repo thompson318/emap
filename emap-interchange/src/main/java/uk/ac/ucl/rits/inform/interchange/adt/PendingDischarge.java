@@ -21,9 +21,6 @@ public class PendingDischarge extends AdtMessage implements PendingEvent {
     private PendingType pendingEventType = PendingType.DISCHARGE;
     private InterchangeValue<String> pendingDestination = InterchangeValue.unknown();
     private InterchangeValue<String> hospitalService = InterchangeValue.unknown();
-    private String dischargeDisposition;
-    private String dischargeLocation;
-    private Instant dischargeDateTime;
 
     @Override
     public void processMessage(EmapOperationMessageProcessor processor) throws EmapOperationMessageProcessingException {

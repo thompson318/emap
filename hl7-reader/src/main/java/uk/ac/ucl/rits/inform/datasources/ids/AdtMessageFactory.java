@@ -258,9 +258,6 @@ public class AdtMessageFactory {
                 break;
             case "A16":
                 PendingDischarge pendingDischargeMsg = new PendingDischarge();
-                pendingDischargeMsg.setDischargeDateTime(pv1Wrap.getDischargeDateTime());
-                pendingDischargeMsg.setDischargeDisposition(pv1Wrap.getDischargeDisposition());
-                pendingDischargeMsg.setDischargeLocation(pv1Wrap.getDischargeLocation());
                 msg = pendingDischargeMsg;
                 break;
             case "A17":
@@ -269,8 +266,6 @@ public class AdtMessageFactory {
             case "A25":
                 CancelPendingDischarge cancelPendingDischargeMsg = new CancelPendingDischarge();
                 setCancellationDatetime(evn, cancelPendingDischargeMsg);
-                cancelPendingDischargeMsg.setDischargeDisposition(pv1Wrap.getDischargeDisposition());
-                cancelPendingDischargeMsg.setDischargeLocation(pv1Wrap.getDischargeLocation());
                 msg = cancelPendingDischargeMsg;
                 break;
             case "A26":

@@ -20,8 +20,6 @@ import java.time.Instant;
 @ToString(callSuper = true)
 public class CancelPendingDischarge extends AdtMessage implements PendingEvent, AdtCancellation {
     private PendingType pendingEventType = PendingType.DISCHARGE;
-    private String dischargeDisposition;
-    private String dischargeLocation;
     private InterchangeValue<String> hospitalService = InterchangeValue.unknown();
     private InterchangeValue<String> pendingDestination = InterchangeValue.unknown();
     private Instant cancelledDateTime;

@@ -112,9 +112,6 @@ public class PendingAdtController {
                 allFromRequest, visit, plannedLocation, msg.getPendingEventType().toString(), msg.getEventOccurredDateTime(), validFrom, storedFrom
         );
 
-
-        addDischargeInformation(msg, plannedState);
-
         PlannedMovement plannedMovement = plannedState.getEntity();
         // If we receive a cancelled message before the original request then add it in
         if (plannedMovement.getEventDatetime() == null) {
@@ -236,18 +233,6 @@ public class PendingAdtController {
     private void addHospitalService(final PendingTransfer msg, RowState<PlannedMovement, PlannedMovementAudit> movementState) {
         PlannedMovement movement = movementState.getEntity();
         movementState.assignInterchangeValue(msg.getHospitalService(), movement.getHospitalService(), movement::setHospitalService);
-    }
-
-    /**
-     * Add discharge specific information.
-     * @param msg        adt message
-     * @param movementState movement wrapped in state class
-     */
-    private void addDischargeInformation(final PendingDischarge msg, RowState<PlannedMovement, PlannedMovementAudit> movementState) {
-        PlannedMovement movement = movementState.getEntity();
-        movementState.assignIfDifferent(msg.getDischargeDateTime(), movement.getDischargeDatetime(), movement::setDischargeDatetime);
-        movementState.assignIfDifferent(msg.getDischargeDisposition(), movement.getDischargeDisposition(), movement::setDischargeDisposition);
-        movementState.assignIfDifferent(msg.getDischargeLocation(), movement.getDischargeDestination(), movement::setDischargeDestination);
     }
 
 }
