@@ -6,8 +6,6 @@ visitNumber: "123412341234"
 nhsNumber: "9999999999"
 sourceSystem: "EPIC"
 mrn: "40800000"
-dischargeDisposition: "Feeling great"
-dischargeLocation: "Home"
 fullLocationString:
   "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
   status: "SAVE"
