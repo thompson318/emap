@@ -130,7 +130,7 @@ class TestPendingAdt extends MessageProcessingBase {
     void testPendingDischargeCreatesPlannedMovement() throws Exception {
         dbOps.processMessage(pendingDischarge);
 
-        PlannedMovement plannedMovement = getPlannedMovementOrThrow(VISIT_NUMBER, "Home");
+        PlannedMovement plannedMovement = getPlannedMovementOrThrow(VISIT_NUMBER, null);
         assertEquals(EVENT_TIME, plannedMovement.getEventDatetime());
         assertEquals(PendingType.DISCHARGE.toString(), plannedMovement.getEventType());
         assertNull(plannedMovement.getCancelledDatetime());
