@@ -39,10 +39,12 @@ public class TestNotesMetadataProcessing extends MessageProcessingBase {
     // private NotesMetadataMessage cancelled;
 
     private static Instant NOTES_METADATA_START_TIME =  Instant.parse("2013-02-14T09:00:00Z");
+    private static Instant NOTES_METADATA_EDIT_TIME =  Instant.parse("2013-02-14T09:00:00Z");
     private static Long NOTES_METADATA_INTERNAL_ID = 1234521112L;
-    private static Long NOTES_METADATA_MRN = 12345678L;
+    private static String NOTES_METADATA_MRN = "40800000";
+
     @BeforeEach
-    private void setUp() throws IOException {
+    public void setUp() throws IOException {
         minimal = messageFactory.getNotesMetadataMessage("minimal.yaml");
     }
 
@@ -68,6 +70,7 @@ public class TestNotesMetadataProcessing extends MessageProcessingBase {
 
 
         NotesMetadata notesMetadata = notesMetadataRepo.findByInternalId(NOTES_METADATA_INTERNAL_ID).orElseThrow();
-        assertEquals(notesMetadata.getStartedDatetime(), NOTES_METADATA_START_TIME);
+        assertEquals(NOTES_METADATA_EDIT_TIME, notesMetadata.getValidFrom());
+        assertEquals(NOTES_METADATA_START_TIME, notesMetadata.getStartedDatetime());
     }
 }
