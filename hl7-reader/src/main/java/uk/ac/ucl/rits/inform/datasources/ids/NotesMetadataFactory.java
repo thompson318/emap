@@ -2,7 +2,6 @@ package uk.ac.ucl.rits.inform.datasources.ids;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.v26.message.MDM_T02;
-import ca.uhn.hl7v2.model.v26.segment.EVN;
 import ca.uhn.hl7v2.model.v26.segment.MSH;
 import ca.uhn.hl7v2.model.v26.segment.PID;
 import ca.uhn.hl7v2.model.v26.segment.PV1;
@@ -12,10 +11,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import uk.ac.ucl.rits.inform.datasources.ids.hl7.parser.NotesMetadataHl7;
-import uk.ac.ucl.rits.inform.datasources.ids.hl7.parser.PatientInfoHl7;
 import uk.ac.ucl.rits.inform.interchange.NotesMetadataMessage;
-
-import java.time.Instant;
 
 /**
  * Factory to generate notes metadata interchange messages from HL7 (i.e. messages with type MDM^T01 or MDM^T08).
@@ -40,7 +36,7 @@ public class NotesMetadataFactory {
         PID pid = (PID) msg.get("PID");
         PV1 pv1 = (PV1) msg.getPV1();
         TXA txa = (TXA) msg.getTXA();
- 
+
         NotesMetadataHl7 notesInfo = new NotesMetadataHl7(msh, pid, pv1, txa);
 
         // generic information

@@ -67,9 +67,14 @@ public class NotesMetadataHl7 implements PV1Wrap, PIDWrap, MSHWrap, TXAWrap {
         return visitNumber;
     }
 
+    /**
+     * Get the notes metadata originating instant from the MSH segment, falling back to the message timestamp if that is empty.
+     * @return the notes metadata originating instant
+     * @throws HL7Exception
+     */
     public Instant getNotesMetadataOriginatingInstantFromMSHIfEmpty() throws HL7Exception {
         Instant originatingInstant = getNotesMetadataOriginatingInstant();
-        if (originatingInstant == null){
+        if (originatingInstant == null) {
             originatingInstant = getMessageTimestamp();
         }
         return originatingInstant;
