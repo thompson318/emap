@@ -461,7 +461,7 @@ public class AdtMessageFactory {
         String hospitalService = pv1Wrap.getHospitalService();
         pendingEvent.setHospitalService(InterchangeValue.buildFromHl7(hospitalService));
     }
-     private void setHospitalService(PV1Wrap pv1Wrap, UpdateSubSpeciality updateSubSpeciality ) throws HL7Exception {
+    private void setHospitalService(PV1Wrap pv1Wrap, UpdateSubSpeciality updateSubSpeciality) throws HL7Exception {
         String hospitalService = pv1Wrap.getHospitalService();
         updateSubSpeciality.setHospitalService(InterchangeValue.buildFromHl7(hospitalService));
     }
