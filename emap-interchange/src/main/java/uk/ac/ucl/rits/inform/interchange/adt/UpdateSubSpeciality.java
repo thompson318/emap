@@ -9,13 +9,13 @@ import uk.ac.ucl.rits.inform.interchange.InterchangeValue;
 
 
 /**
- * Change the Sub Speciality
+ * Change the Sub Speciality.
  * HL7 messages: Z99
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class UpdateSubSpeciality extends AdtMessage implements HospitalService{
+public class UpdateSubSpeciality extends AdtMessage implements HospitalService {
     private InterchangeValue<String> hospitalService = InterchangeValue.unknown();
 
     @Override
