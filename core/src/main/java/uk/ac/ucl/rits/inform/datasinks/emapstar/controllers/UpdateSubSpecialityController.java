@@ -14,7 +14,6 @@ import uk.ac.ucl.rits.inform.informdb.movement.Location;
 import uk.ac.ucl.rits.inform.interchange.adt.AdmissionDateTime;
 import uk.ac.ucl.rits.inform.interchange.adt.AdtCancellation;
 import uk.ac.ucl.rits.inform.interchange.adt.AdtMessage;
-import uk.ac.ucl.rits.inform.interchange.adt.CancelDischargePatient;
 import uk.ac.ucl.rits.inform.interchange.adt.MoveVisitInformation;
 import uk.ac.ucl.rits.inform.interchange.adt.RegisterPatient;
 import uk.ac.ucl.rits.inform.interchange.adt.UpdateSubSpeciality;
