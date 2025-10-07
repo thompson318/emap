@@ -9,6 +9,7 @@ import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.PendingAdtController
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.PersonController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.VisitController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.DeletionController;
+import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.UpdateSubSpecialityController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.exceptions.RequiredDataMissingException;
 import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
 import uk.ac.ucl.rits.inform.informdb.identity.Mrn;
@@ -21,6 +22,7 @@ import uk.ac.ucl.rits.inform.interchange.adt.MergePatient;
 import uk.ac.ucl.rits.inform.interchange.adt.MoveVisitInformation;
 import uk.ac.ucl.rits.inform.interchange.adt.PendingTransfer;
 import uk.ac.ucl.rits.inform.interchange.adt.SwapLocations;
+import uk.ac.ucl.rits.inform.interchange.adt.UpdateSubSpeciality;
 
 import java.time.Instant;
 import java.util.List;
@@ -37,6 +39,7 @@ public class AdtProcessor {
     private final PatientLocationController patientLocationController;
     private final PendingAdtController pendingAdtController;
     private final DeletionController deletionController;
+    private final UpdateSubSpecialityController updateSubSpecialityController;
 
     /**
      * Implicitly wired spring beans.
@@ -48,12 +51,13 @@ public class AdtProcessor {
      */
     public AdtProcessor(PersonController personController, VisitController visitController,
                         PatientLocationController patientLocationController, PendingAdtController pendingAdtController,
-                        DeletionController deletionController) {
+                        DeletionController deletionController, UpdateSubSpecialityController updateSubSpecialityController) {
         this.personController = personController;
         this.visitController = visitController;
         this.patientLocationController = patientLocationController;
         this.pendingAdtController = pendingAdtController;
         this.deletionController = deletionController;
+        this.updateSubSpecialityController = updateSubSpecialityController;
     }
 
 
@@ -211,4 +215,21 @@ public class AdtProcessor {
         HospitalVisit visit = processPersonAndVisit(msg, storedFrom, validFrom);
         pendingAdtController.processMsg(visit, msg, validFrom, storedFrom);
     }
+
+    /**
+     * Process an update subspeciality message.
+     * <p>
+     * Updates the sub speciality in the hospital visit table
+     * @param msg        change sub speciality adt message
+     * @param storedFrom time that emap core started processing the message
+     * @throws RequiredDataMissingException if the visit number is missing
+     */
+    @Transactional
+    public void processUpdateSubSpeciality(UpdateSubSpeciality msg, Instant storedFrom) throws RequiredDataMissingException {
+        Instant validFrom = msg.bestGuessAtValidFrom();
+        HospitalVisit visit = processPersonAndVisit(msg, storedFrom, validFrom);
+        // patientLocationController.processVisitLocation(visit, msg, storedFrom);
+        // updateSubSpecialityController.processMsg(visit, msg, validFrom, storedFrom);
+    }
+
 }
