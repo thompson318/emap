@@ -43,11 +43,12 @@ public class AdtProcessor {
 
     /**
      * Implicitly wired spring beans.
-     * @param personController          person interactions.
-     * @param visitController           encounter interactions.
-     * @param patientLocationController location interactions.
-     * @param pendingAdtController      pending ADT interactions.
-     * @param deletionController        cascading deletes for hospital visits.
+     * @param personController              person interactions.
+     * @param visitController               encounter interactions.
+     * @param patientLocationController     location interactions.
+     * @param pendingAdtController          pending ADT interactions.
+     * @param deletionController            cascading deletes for hospital visits.
+     * @param updateSubSpecialityController changing the sub speciality
      */
     public AdtProcessor(PersonController personController, VisitController visitController,
                         PatientLocationController patientLocationController, PendingAdtController pendingAdtController,
