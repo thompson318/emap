@@ -154,8 +154,25 @@ public class PendingAdtController {
      * @param storedFrom time that emap core started processing the message
      */
     public void processMsg(HospitalVisit visit, UpdateSubSpeciality msg, Instant validFrom, Instant storedFrom) {
-        Location plannedLocation = null;
+        Location fullLocation = null;
 
+        if (msg.getFullLocationString().isSave()) {
+            fullLocation = locationController.getOrCreateLocation(msg.getFullLocationString().get());
+        }
+        // pseudo from issue
+        // match pending adt by hospital_visit and location
+        // f if a match is found, add in new row to the planned_movement table, event_type = EDIT/HOSPTIAL_SERVICE_CHANGE
+        
+        // look for matching entry here
+
+        RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
+                allFromRequest, visit, fullLocation, "EDIT/HOSPITAL_SERVICE_CHANGE", msg.getEventOccurredDateTime(), validFrom, storedFrom
+        );
+
+        plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
+        plannedMovementRepo.findAllByHospitalVisitId(visit);
+        //plannedMovementRepo.findByHospitalVisitIdEncounterAndLocationIdLocationString(visit, plannedLocation);
+        //plannedMovementRepo.
     }
 
     /**

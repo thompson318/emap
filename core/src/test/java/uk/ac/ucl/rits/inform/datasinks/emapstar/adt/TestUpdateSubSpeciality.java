@@ -78,7 +78,7 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
          get the most recent planned movement - there shouldn't be one, so will throw a
          NoSuchElementException
         */
-        assertThrows(NoSuchElementException.class, () -> getPlannedMovementOrThrow(VISIT_NUMBER, LOCATION_STRING));
+        assertThrows(NoSuchElementException.class, () -> getPlannedMovementOrThrow(VISIT_NUMBER, "EAU^UCH T00 EAU BY02^BY02-08"));
     }
 
 
