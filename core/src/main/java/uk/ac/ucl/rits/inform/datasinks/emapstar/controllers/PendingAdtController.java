@@ -12,6 +12,7 @@ import uk.ac.ucl.rits.inform.informdb.movement.PlannedMovement;
 import uk.ac.ucl.rits.inform.informdb.movement.PlannedMovementAudit;
 import uk.ac.ucl.rits.inform.interchange.adt.CancelPendingTransfer;
 import uk.ac.ucl.rits.inform.interchange.adt.PendingTransfer;
+import uk.ac.ucl.rits.inform.interchange.adt.UpdateSubSpeciality;
 
 import java.time.Instant;
 import java.util.List;
@@ -137,6 +138,24 @@ public class PendingAdtController {
         }
 
         plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
+    }
+
+     /**
+     * Process an Update subspeciality (Z99) request.
+     * <p>
+     * The Hl7 feed will eventually be changed so that we have an identifier per pending transfer, until then we guarantee the order of cancellations.
+     * If we get messages out of order and have several cancellation messages before we receive any requests,
+     * then the first request message for the location and encounter will add the eventDatetime to the earliest cancellation.
+     * Subsequent requests will add the eventDatetime to the earliest cancellation with no eventDatetime, or create a new request if none exist
+     * after the pending request eventDatetime.
+     * @param visit      associated visit
+     * @param msg        update sub speciality
+     * @param validFrom  time in the hospital when the message was created
+     * @param storedFrom time that emap core started processing the message
+     */
+    public void processMsg(HospitalVisit visit, UpdateSubSpeciality msg, Instant validFrom, Instant storedFrom) {
+        Location plannedLocation = null;
+
     }
 
     /**

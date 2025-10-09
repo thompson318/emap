@@ -9,7 +9,6 @@ import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.PendingAdtController
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.PersonController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.VisitController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.DeletionController;
-import uk.ac.ucl.rits.inform.datasinks.emapstar.controllers.UpdateSubSpecialityController;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.exceptions.RequiredDataMissingException;
 import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
 import uk.ac.ucl.rits.inform.informdb.identity.Mrn;
@@ -39,7 +38,6 @@ public class AdtProcessor {
     private final PatientLocationController patientLocationController;
     private final PendingAdtController pendingAdtController;
     private final DeletionController deletionController;
-    private final UpdateSubSpecialityController updateSubSpecialityController;
 
     /**
      * Implicitly wired spring beans.
@@ -48,17 +46,15 @@ public class AdtProcessor {
      * @param patientLocationController     location interactions.
      * @param pendingAdtController          pending ADT interactions.
      * @param deletionController            cascading deletes for hospital visits.
-     * @param updateSubSpecialityController changing the sub speciality
      */
     public AdtProcessor(PersonController personController, VisitController visitController,
                         PatientLocationController patientLocationController, PendingAdtController pendingAdtController,
-                        DeletionController deletionController, UpdateSubSpecialityController updateSubSpecialityController) {
+                        DeletionController deletionController) {
         this.personController = personController;
         this.visitController = visitController;
         this.patientLocationController = patientLocationController;
         this.pendingAdtController = pendingAdtController;
         this.deletionController = deletionController;
-        this.updateSubSpecialityController = updateSubSpecialityController;
     }
 
 
@@ -230,7 +226,7 @@ public class AdtProcessor {
         Instant validFrom = msg.bestGuessAtValidFrom();
         HospitalVisit visit = processPersonAndVisit(msg, storedFrom, validFrom);
         // patientLocationController.processVisitLocation(visit, msg, storedFrom);
-        // updateSubSpecialityController.processMsg(visit, msg, validFrom, storedFrom);
+        pendingAdtController.processMsg(visit, msg, validFrom, storedFrom);
     }
 
 }
