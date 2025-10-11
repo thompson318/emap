@@ -46,7 +46,7 @@ public class NotesMetadataFactory {
         notesMetadataMessage.setVisitNumber(notesInfo.getVisitNumberFromPv1orPID());
         notesMetadataMessage.setNoteType(notesInfo.getNotesMetadataTypeString());
         notesMetadataMessage.setStartedDatetime(notesInfo.getNotesMetadataOriginatingInstantFromMSHIfEmpty());
-        notesMetadataMessage.setLastEditDatetime(notesInfo.getNotesMetadataActivityInstant());
+        notesMetadataMessage.setLastEditDatetime(notesInfo.getNotesMetadataEditingInstantFromTXAIfEmpty());
 
         return notesMetadataMessage;
     }

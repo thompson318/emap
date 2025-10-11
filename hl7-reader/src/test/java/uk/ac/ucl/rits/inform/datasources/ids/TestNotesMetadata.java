@@ -85,7 +85,8 @@ public class TestNotesMetadata extends TestHl7MessageStream {
         assertEquals(MSG_TIME, notesMetadataMessage.getStartedDatetime());
         assertEquals(VISIT_NUMBER, notesMetadataMessage.getVisitNumber());
         assertEquals(DOCUMENT_TYPE, notesMetadataMessage.getNoteType());
-        assertNull(notesMetadataMessage.getLastEditDatetime());
+        assertNotNull(notesMetadataMessage.getLastEditDatetime());
+        assertEquals(MSG_TIME, notesMetadataMessage.getLastEditDatetime());
     }
 
     /**

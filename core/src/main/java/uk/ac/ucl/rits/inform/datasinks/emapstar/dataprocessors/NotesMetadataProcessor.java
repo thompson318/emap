@@ -52,6 +52,9 @@ public class NotesMetadataProcessor {
     public void processMessage(final NotesMetadataMessage msg, final Instant storedFrom)
             throws EmapOperationMessageProcessingException {
         Instant msgStatusChangeTime = msg.getLastEditDatetime();
+        if (msgStatusChangeTime == null) {
+            msgStatusChangeTime = storedFrom;
+        }
 
         // retrieve patient to whom message refers to; if MRN not registered, create new patient
         Mrn mrn = personController.getOrCreateOnMrnOnly(msg.getMrn(), null, msg.getSourceSystem(),

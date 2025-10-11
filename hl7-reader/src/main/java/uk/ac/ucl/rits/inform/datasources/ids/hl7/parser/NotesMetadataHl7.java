@@ -80,4 +80,17 @@ public class NotesMetadataHl7 implements PV1Wrap, PIDWrap, MSHWrap, TXAWrap {
         return originatingInstant;
     }
 
+    /**
+     * Get the notes metadata editing instant from the TXA segment, falling back to the message timestamp if that is empty.
+     * @return the notes metadata editing instant
+     * @throws HL7Exception
+     */
+    public Instant getNotesMetadataEditingInstantFromTXAIfEmpty() throws HL7Exception {
+        Instant editingInstant = getNotesMetadataActivityInstant();
+        if (editingInstant == null) {
+            editingInstant = getMessageTimestamp();
+        }
+        return editingInstant;
+    }
+
 }
