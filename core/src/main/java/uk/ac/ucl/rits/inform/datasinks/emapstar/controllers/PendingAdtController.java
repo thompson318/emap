@@ -161,8 +161,7 @@ public class PendingAdtController {
         }
         // pseudo from issue
         // match pending adt by hospital_visit and location
-        // f if a match is found, add in new row to the planned_movement table, event_type = EDIT/HOSPTIAL_SERVICE_CHANGE
-        
+        // if if a match is found, add in new row to the planned_movement table, event_type = EDIT/HOSPTIAL_SERVICE_CHANGE
         // look for matching entry here
 
         RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
