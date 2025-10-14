@@ -17,6 +17,7 @@ import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.MrnRepository;
 import uk.ac.ucl.rits.inform.datasinks.emapstar.repos.PlannedMovementRepository;
 import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
 import uk.ac.ucl.rits.inform.informdb.movement.PlannedMovement;
+import uk.ac.ucl.rits.inform.interchange.adt.PendingTransfer;
 import uk.ac.ucl.rits.inform.interchange.test.helpers.InterchangeMessageFactory;
 import uk.ac.ucl.rits.inform.interchange.InterchangeValue;
 import uk.ac.ucl.rits.inform.interchange.adt.AdtMessage;
@@ -95,6 +96,22 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
         assertEquals(1, mrnRepository.count());
         assertEquals(1, coreDemographicRepository.count());
         assertEquals(1, hospitalVisitRepository.count());
+    }
+
+    /**
+     * If more than one pending transfer exists choose and edit the most recent occurence
+     */
+    @Test
+    void testLastMessageIsEdited() throws Exception {
+        PendingTransfer pendingTransfer = messageFactory.getAdtMessage("pending/A15.yaml");
+        PendingTransfer pendingTransferLater = messageFactory.getAdtMessage("pending/A15.yaml");
+
+        Instant laterTime = pendingTransferLater.getEventOccurredDateTime().plus(1, ChronoUnit.HOURS);
+        pendingTransferLater.setEventOccurredDateTime(laterTime);
+        dbOps.processMessage(pendingTransfer);
+        dbOps.processMessage(pendingTransferLater);
+        dbOps.processMessage(updateSubSpeciality);
+
     }
 
 }

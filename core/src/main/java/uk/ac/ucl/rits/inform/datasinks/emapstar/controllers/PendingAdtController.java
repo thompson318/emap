@@ -169,7 +169,9 @@ public class PendingAdtController {
         );
 
         plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
-        plannedMovementRepo.findAllByHospitalVisitId(visit);
+        List<PlannedMovement> movements = plannedMovementRepo.findAllByHospitalVisitId(visit);
+        Instant eventDateTime = msg.getEventOccurredDateTime();
+        List<PlannedMovement> movements_anew = plannedMovementRepo.findMatchingMovementsFromZ99(visit, fullLocation, eventDateTime);
         //plannedMovementRepo.findByHospitalVisitIdEncounterAndLocationIdLocationString(visit, plannedLocation);
         //plannedMovementRepo.
     }

@@ -1,6 +1,6 @@
 "@class": "uk.ac.ucl.rits.inform.interchange.adt.UpdateSubSpeciality"
 recordedDateTime: "2013-02-11T18:00:52Z"
-eventOccurredDateTime: "2013-02-11T17:00:52Z"
+eventOccurredDateTime: "2022-04-22T00:00:00Z"
 eventReasonCode: "ADT_EVENT"
 visitNumber: "123412341234"
 nhsNumber: "9999999999"
@@ -13,7 +13,7 @@ hospitalService:
 fullLocationString:
   "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
   status: "SAVE"
-  value: "EAU^UCH T00 EAU BY02^BY02-08"
+  value: "1020100166^SDEC BY02^11 SDEC"
 patientClass:
   "@class": "uk.ac.ucl.rits.inform.interchange.InterchangeValue"
   status: "SAVE"
