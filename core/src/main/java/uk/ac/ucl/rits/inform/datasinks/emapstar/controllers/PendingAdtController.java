@@ -176,8 +176,10 @@ public class PendingAdtController {
         RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
                 allFromRequest, visit, fullLocation, "EDIT/HOSPITAL_SERVICE_CHANGE", msg.getEventOccurredDateTime(), validFrom, storedFrom
         );
+
+
         PlannedMovement movement = plannedState.getEntity();
-        //plannedState.assignInterchangeValue(matched_movement_id, movement.getMatchedMovementId(), movement::setMatchedMovementId);
+        plannedState.assignInterchangeValue(msg.getHospitalService(), movement.getHospitalService(), movement::setHospitalService);
         plannedState.assignIfDifferent(matchedMovementId, movement.getMatchedMovementId(), movement::setMatchedMovementId);
         plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
 
