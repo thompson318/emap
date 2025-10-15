@@ -10,13 +10,11 @@ import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
 import uk.ac.ucl.rits.inform.informdb.movement.Location;
 import uk.ac.ucl.rits.inform.informdb.movement.PlannedMovement;
 import uk.ac.ucl.rits.inform.informdb.movement.PlannedMovementAudit;
-import uk.ac.ucl.rits.inform.interchange.InterchangeValue;
 import uk.ac.ucl.rits.inform.interchange.adt.CancelPendingTransfer;
 import uk.ac.ucl.rits.inform.interchange.adt.PendingTransfer;
 import uk.ac.ucl.rits.inform.interchange.adt.UpdateSubSpeciality;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -168,12 +166,11 @@ public class PendingAdtController {
 
         Instant eventDateTime = msg.getEventOccurredDateTime();
         List<PlannedMovement> movements = plannedMovementRepo.findMatchingMovementsFromZ99(visit, fullLocation, eventDateTime);
-        Long matched_movement_id;
-        if ( movements.isEmpty() ) {
-            matched_movement_id = null;
-        }
-        else {
-            matched_movement_id = movements.get(0).getPlannedMovementId();
+        Long matchedMovementId;
+        if (movements.isEmpty()) {
+            matchedMovementId = null;
+        } else {
+            matchedMovementId = movements.get(0).getPlannedMovementId();
         }
 
         RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
@@ -181,7 +178,7 @@ public class PendingAdtController {
         );
         PlannedMovement movement = plannedState.getEntity();
         //plannedState.assignInterchangeValue(matched_movement_id, movement.getMatchedMovementId(), movement::setMatchedMovementId);
-        plannedState.assignIfDifferent(matched_movement_id, movement.getMatchedMovementId(), movement::setMatchedMovementId);
+        plannedState.assignIfDifferent(matchedMovementId, movement.getMatchedMovementId(), movement::setMatchedMovementId);
         plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
 
     }
