@@ -179,6 +179,10 @@ public class PendingAdtController {
 
 
         PlannedMovement movement = plannedState.getEntity();
+        // not sure why but event date time isn't being set. Add it here.
+        if (movement.getEventDatetime() == null) {
+            plannedState.assignIfDifferent(msg.getEventOccurredDateTime(), movement.getEventDatetime(), movement::setEventDatetime);
+        }
         plannedState.assignInterchangeValue(msg.getHospitalService(), movement.getHospitalService(), movement::setHospitalService);
         plannedState.assignIfDifferent(matchedMovementId, movement.getMatchedMovementId(), movement::setMatchedMovementId);
         plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
