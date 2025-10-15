@@ -1,5 +1,6 @@
 package uk.ac.ucl.rits.inform.datasinks.emapstar.adt;
 
+import org.h2.table.Plan;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -52,7 +53,7 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
 
     private static final String VISIT_NUMBER = "123412341234";
     private static final String LOCATION_STRING = "1020100166^SDEC BY02^11 SDEC";
-    private static final Instant EVENT_TIME = Instant.parse("2022-04-21T23:22:58Z");
+    private static final Instant EVENT_TIME = Instant.parse("2022-04-22T00:00:00Z");
     private static final Instant CANCEL_TIME = Instant.parse("2022-04-21T23:37:58Z");
 
 
@@ -87,6 +88,7 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
      * Given that no entities exist in the database
      * When a Z99 Message is created
      * Mrn, core demographics and hospital visit entities should be created
+     * and a planned movement should be created with a Null matchedMovementId
      * @throws Exception shouldn't happen
      */
     @Test
@@ -96,8 +98,9 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
         assertEquals(1, mrnRepository.count());
         assertEquals(1, coreDemographicRepository.count());
         assertEquals(1, hospitalVisitRepository.count());
-        // an entry should have been added to the planned movement table with a null matched movement id.
-        assertNull(1);
+
+        PlannedMovement movement = getPlannedMovementOrThrow(VISIT_NUMBER, LOCATION_STRING);
+        assertNull(movement.getMatchedMovementId());
     }
 
     /**
@@ -115,8 +118,8 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
         dbOps.processMessage(updateSubSpeciality);
 
         // and entry should have been added to the planned movement table with the correct matched planned movement id
-        assertEquals (1, 0);
-
+        List<PlannedMovement> movements = plannedMovementRepository.findAllByHospitalVisitIdEncounter(VISIT_NUMBER);
+        assertEquals (6, movements.get(2).getMatchedMovementId());
     }
 
 }

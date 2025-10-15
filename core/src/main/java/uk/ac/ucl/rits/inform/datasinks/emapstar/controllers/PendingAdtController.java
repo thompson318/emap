@@ -170,7 +170,7 @@ public class PendingAdtController {
         if (movements.isEmpty()) {
             matchedMovementId = null;
         } else {
-            matchedMovementId = movements.get(0).getPlannedMovementId();
+            matchedMovementId = movements.get(movements.size() - 1).getPlannedMovementId();
         }
 
         RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
