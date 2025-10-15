@@ -17,6 +17,7 @@ import uk.ac.ucl.rits.inform.interchange.InterchangeValue;
 @ToString(callSuper = true)
 public class UpdateSubSpeciality extends AdtMessage implements HospitalService {
     private InterchangeValue<String> hospitalService = InterchangeValue.unknown();
+    private InterchangeValue<Long> matchedMovementId = InterchangeValue.unknown();
 
     @Override
     public void processMessage(EmapOperationMessageProcessor processor) throws EmapOperationMessageProcessingException {

@@ -96,6 +96,8 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
         assertEquals(1, mrnRepository.count());
         assertEquals(1, coreDemographicRepository.count());
         assertEquals(1, hospitalVisitRepository.count());
+        // an entry should have been added to the planned movement table with a null matched movement id.
+        assertNull(1);
     }
 
     /**
@@ -111,6 +113,9 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
         dbOps.processMessage(pendingTransfer);
         dbOps.processMessage(pendingTransferLater);
         dbOps.processMessage(updateSubSpeciality);
+
+        // and entry should have been added to the planned movement table with the correct matched planned movement id
+        assertEquals (1, 0);
 
     }
 

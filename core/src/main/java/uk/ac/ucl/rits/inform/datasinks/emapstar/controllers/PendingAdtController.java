@@ -10,11 +10,13 @@ import uk.ac.ucl.rits.inform.informdb.identity.HospitalVisit;
 import uk.ac.ucl.rits.inform.informdb.movement.Location;
 import uk.ac.ucl.rits.inform.informdb.movement.PlannedMovement;
 import uk.ac.ucl.rits.inform.informdb.movement.PlannedMovementAudit;
+import uk.ac.ucl.rits.inform.interchange.InterchangeValue;
 import uk.ac.ucl.rits.inform.interchange.adt.CancelPendingTransfer;
 import uk.ac.ucl.rits.inform.interchange.adt.PendingTransfer;
 import uk.ac.ucl.rits.inform.interchange.adt.UpdateSubSpeciality;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -164,16 +166,24 @@ public class PendingAdtController {
         // if if a match is found, add in new row to the planned_movement table, event_type = EDIT/HOSPTIAL_SERVICE_CHANGE
         // look for matching entry here
 
+        Instant eventDateTime = msg.getEventOccurredDateTime();
+        List<PlannedMovement> movements = plannedMovementRepo.findMatchingMovementsFromZ99(visit, fullLocation, eventDateTime);
+        Long matched_movement_id;
+        if ( movements.isEmpty() ) {
+            matched_movement_id = null;
+        }
+        else {
+            matched_movement_id = movements.get(0).getPlannedMovementId();
+        }
+
         RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
                 allFromRequest, visit, fullLocation, "EDIT/HOSPITAL_SERVICE_CHANGE", msg.getEventOccurredDateTime(), validFrom, storedFrom
         );
-
+        PlannedMovement movement = plannedState.getEntity();
+        //plannedState.assignInterchangeValue(matched_movement_id, movement.getMatchedMovementId(), movement::setMatchedMovementId);
+        plannedState.assignIfDifferent(matched_movement_id, movement.getMatchedMovementId(), movement::setMatchedMovementId);
         plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
-        List<PlannedMovement> movements = plannedMovementRepo.findAllByHospitalVisitId(visit);
-        Instant eventDateTime = msg.getEventOccurredDateTime();
-        List<PlannedMovement> movements_anew = plannedMovementRepo.findMatchingMovementsFromZ99(visit, fullLocation, eventDateTime);
-        //plannedMovementRepo.findByHospitalVisitIdEncounterAndLocationIdLocationString(visit, plannedLocation);
-        //plannedMovementRepo.
+
     }
 
     /**
