@@ -10,6 +10,7 @@ between the research process and the hospital’s systems and that the systems a
 
 For more information about EMAP, please see the [docs](https://github.com/SAFEHR-data/emap/tree/main/docs)
 
+
 ## Developer Onboarding
 
 - Start by creating an [onboarding](https://github.com/SAFEHR-data/emap/issues) issue using the onboarding template and assign it to yourself.
