@@ -87,8 +87,9 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
     /**
      * Given that no entities exist in the database
      * When a Z99 Message is created
-     * Mrn, core demographics and hospital visit entities should be created
-     * and a planned movement should be created with a Null matchedMovementId
+     * Mrn, core demographics and hospital visit entities should be created.
+     * A planned movement should not be created as there are no matching planned moves in the
+     * planned movement table
      * @throws Exception shouldn't happen
      */
     @Test
@@ -99,15 +100,15 @@ class TestUpdateSubSpeciality extends MessageProcessingBase {
         assertEquals(1, coreDemographicRepository.count());
         assertEquals(1, hospitalVisitRepository.count());
 
-        PlannedMovement movement = getPlannedMovementOrThrow(VISIT_NUMBER, LOCATION_STRING);
-        assertNull(movement.getMatchedMovementId());
+        assertThrows(NoSuchElementException.class, () -> getPlannedMovementOrThrow(VISIT_NUMBER, LOCATION_STRING));
     }
 
     /**
-     * If more than one pending transfer exists choose and edit the most recent occurence
+     * If more than one pending transfer exists find the most recent one and if it
+     * has a different hospital service insert the edit into the planned movement table.
      */
     @Test
-    void testLastMessageIsEdited() throws Exception {
+    void testEditMessageInsertedIfHospitalServicesAreDifferent() throws Exception {
         PendingTransfer pendingTransfer = messageFactory.getAdtMessage("pending/A15.yaml");
         PendingTransfer pendingTransferLater = messageFactory.getAdtMessage("pending/A15.yaml");
 

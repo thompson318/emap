@@ -16,6 +16,7 @@ import uk.ac.ucl.rits.inform.interchange.adt.UpdateSubSpeciality;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -166,27 +167,27 @@ public class PendingAdtController {
 
         Instant eventDateTime = msg.getEventOccurredDateTime();
         List<PlannedMovement> movements = plannedMovementRepo.findMatchingMovementsFromZ99(visit, fullLocation, eventDateTime);
-        Long matchedMovementId;
-        if (movements.isEmpty()) {
-            matchedMovementId = null;
-        } else {
-            matchedMovementId = movements.get(movements.size() - 1).getPlannedMovementId();
+        if (!movements.isEmpty()) {
+
+            int mostRecentMoveIndex = movements.size() - 1;
+            String currentService = movements.get(mostRecentMoveIndex).getHospitalService();
+            String editedService = msg.getHospitalService().get();
+
+            if (!Objects.equals(currentService, editedService)) {
+                Long matchedMovementId = movements.get(mostRecentMoveIndex).getPlannedMovementId();
+                RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
+                        allFromRequest, visit, fullLocation, "EDIT/HOSPITAL_SERVICE_CHANGE", msg.getEventOccurredDateTime(), validFrom, storedFrom
+                );
+                PlannedMovement movement = plannedState.getEntity();
+                // not sure why but event date time isn't being set. Add it here.
+                if (movement.getEventDatetime() == null) {
+                    plannedState.assignIfDifferent(msg.getEventOccurredDateTime(), movement.getEventDatetime(), movement::setEventDatetime);
+                }
+                plannedState.assignInterchangeValue(msg.getHospitalService(), movement.getHospitalService(), movement::setHospitalService);
+                plannedState.assignIfDifferent(matchedMovementId, movement.getMatchedMovementId(), movement::setMatchedMovementId);
+                plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
+            }
         }
-
-        RowState<PlannedMovement, PlannedMovementAudit> plannedState = getOrCreate(
-                allFromRequest, visit, fullLocation, "EDIT/HOSPITAL_SERVICE_CHANGE", msg.getEventOccurredDateTime(), validFrom, storedFrom
-        );
-
-
-        PlannedMovement movement = plannedState.getEntity();
-        // not sure why but event date time isn't being set. Add it here.
-        if (movement.getEventDatetime() == null) {
-            plannedState.assignIfDifferent(msg.getEventOccurredDateTime(), movement.getEventDatetime(), movement::setEventDatetime);
-        }
-        plannedState.assignInterchangeValue(msg.getHospitalService(), movement.getHospitalService(), movement::setHospitalService);
-        plannedState.assignIfDifferent(matchedMovementId, movement.getMatchedMovementId(), movement::setMatchedMovementId);
-        plannedState.saveEntityOrAuditLogIfRequired(plannedMovementRepo, plannedMovementAuditRepo);
-
     }
 
     /**
